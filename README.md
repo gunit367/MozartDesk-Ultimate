@@ -1,4 +1,4 @@
-CPE123-Final-Project
+MozartDesk Ultimate
 ====================
 
 Final Project for CPE123
