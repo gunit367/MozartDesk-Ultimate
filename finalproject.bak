@@ -13,22 +13,6 @@
 
 (define INITIAL_WORLD (make-world default_list 120 0 "edit"))
 
-;plays all the notes in a list of notes
-(define (play-notes lon tempo)
-  (cond [(empty? lon) ps]
-        [else
-         (both (play-note (first lon) tempo) 
-               (play-notes (rest lon)))]))
-
-
-;; play a single note, based on what kind of sound it is along with it's time and pitch
-;; note -> nothing?
-(define (play-note n tempo)(cond
-                       [(string=? (note-type n) "piano1")(pstream-queue ps (piano-tone (note-pitch n)) (* tempo (note-beat n)))]
-                       
-                       
-                     ))
- 
 
 ; number -> image
 ; Makes a slider depending on what the 
