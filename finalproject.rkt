@@ -4,45 +4,56 @@
 (require rsound)
 (require rsound/piano-tones)
 
+; required function
+(define (both a b) b)
+
+; s is a number
+; number -> number
+; s function takes in a second(time) and produces the frame of that second
+(define (s n)
+  (* 44100 n))
+
 ;world definition includes:
 ; -a complete list of the world's notes
 ; -the tempo of the world
 ; -the current beat that the world is on
 ; -the mode state of the world, including whether it's played or paused
 ; -the currently selected icon to place on the grid
-; -the current page
+; -the current page (Currently not in use)
 ; (make-world (list frames number string string number)
 (define-struct world (worldlist tempo curbeat modestate selected page))
 
-;a note is a structure that includes
+; initial state of the world for the program
+(define default_list empty)
+(define INITIAL_WORLD (make-world default_list 44100 0 "edit" "piano" 0))
+
+
+; a note is a structure that includes
 ; -the type of sound
 ; -the pitch of a sound
 ; -the beat of a sound
 ; (make-note (string number number)
 (define-struct note (type pitch beat))
-(define (both a b) b)
-(define default_list empty)
-(define (s n)
-  (* 44100 n))
 
-;the square's width and height
+
+; the square's width and height
 (define INTERVAL_HEIGHT 75)
 (define BEAT_WIDTH 75)
 
+; constant definition for the beat
 (define BEATS_PER_PAGE 16)
 (define TOP_OF_STAFF 0) ; y coordinate of the top of the staff
 (define BOTTOM_OF_STAFF (+ TOP_OF_STAFF (* 8 INTERVAL_HEIGHT)))
 (define START_OF_STAFF 0) ; x coordinate of the far left side of the staff
 (define END_OF_STAFF (+ START_OF_STAFF (* 8 BEAT_WIDTH)))
 
-;initial state of the world for the program
-(define INITIAL_WORLD (make-world default_list 44100 0 "edit" "piano" 0))
 
-;page button arrows, default at page one
-;page buttons are not functional for right now since we are only using on page for prototype
+; page button arrows, default at page one
+; page buttons are not functional for right now since we are only using on page for prototype
 (define arrow_left empty-image)
 
 (define arrow_right .)
+
 
 (define ps (make-pstream))
 
@@ -81,7 +92,7 @@
                                                                         (empty-scene 900 700)))))))]                
     [(cons? lon) (place-image (rectangle 75 75 "solid" "red") (beatlookup (note-beat (first lon))) (pitchlookup (note-pitch (first lon))) (makescene (rest lon)))]))
 
-;the row of rectangle
+; the row of rectangle
 (define (rendercols) 
   (beside (colrender)
          (colrender)
@@ -92,7 +103,7 @@
          (colrender)
          (colrender)))
 
-;the column of rectangle
+; the column of rectangle
 (define (colrender) 
   (above (button)
           (button)
@@ -103,7 +114,7 @@
           (button)
           (button)))
 
-;the rectangle design
+; the rectangle design
 (define (button) (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'black))
 
                  
@@ -145,13 +156,6 @@
    50 50
    (square 100 'solid 'black)))
 
-
-
-
-
-;(define-struct world (worldlist tempo curbeat modestate selected))
-;(define-struct note (type pitch beat))
-
 ; Mouse Event Handler
 ; World X Y Event -> World
 
@@ -173,6 +177,7 @@
 (define (mousecol x)
   (ceiling (/ (- x START_OF_STAFF) BEAT_WIDTH)))
 
+
 ; Decides what to set the fields as in each new note added to the worldlist
 ; Beat Pitch Sound -> Note
 (define (new-note col row selected beat)
@@ -189,16 +194,17 @@
         [(= row 2) 71]
         [(= row 1) 72]))
 
+
 ;find the current beat an use it to tell which column the program is suppose to move to and play that column's sound
 (define (findbeat col beat)
   (+ col (* BEATS_PER_PAGE (floor (/ beat BEATS_PER_PAGE)))))
+
 
 ; Handles the mouse for a button-down event
 ; world x y event -> world
 ; By pressing the block, the block will turn from outline to red solid block
 ; By pressing the reset button, the block will all turn back to outline
 ; By pressing the play button, the program will play the piano-tones depending on which blocks are currently red solid
-
 (define (mousefn w x y evt)
   (cond [(and (and (< x 600) (< y 600)) (string=? evt "button-down")) (buttondownhandler w x y)]
         [(and (and (< 650 x 750) (< 250 y 350)) (string=? evt "button-down")) INITIAL_WORLD]
@@ -214,4 +220,3 @@
           [on-mouse mousefn]
           [on-draw renderfn]
           )
- 
