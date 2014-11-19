@@ -36,15 +36,15 @@
 (define-struct note (type pitch beat))
 
 
-; the square's width and height
-(define INTERVAL_HEIGHT 75)
-(define BEAT_WIDTH 75)
+; the squares' width and height
+(define INTERVAL_HEIGHT 50)
+(define BEAT_WIDTH 50)
 
-; constant definition for the beat
+; constant definition for the beat and position of staff
 (define BEATS_PER_PAGE 16)
-(define TOP_OF_STAFF 0) ; y coordinate of the top of the staff
+(define TOP_OF_STAFF 100) ; y coordinate of the top of the staff
 (define BOTTOM_OF_STAFF (+ TOP_OF_STAFF (* 8 INTERVAL_HEIGHT)))
-(define START_OF_STAFF 0) ; x coordinate of the far left side of the staff
+(define START_OF_STAFF 100) ; x coordinate of the far left side of the staff
 (define END_OF_STAFF (+ START_OF_STAFF (* 8 BEAT_WIDTH)))
 
 
@@ -52,7 +52,7 @@
 ; page buttons are not functional for right now since we are only using on page for prototype
 (define arrow_left empty-image)
 
-(define arrow_right .)
+(define arrow_right empty-image)
 
 
 (define ps (make-pstream))
@@ -79,10 +79,12 @@
 
 ; list -> image
 ; Creates a image depending on the worldlist's list of notes
+; TODO replace overlay/align with place-image/align!!! To be able to place staff anywhere
 (define (makescene lon)
   (cond
     [(empty? lon) 
-     (overlay/align "left" "top" (rendercols) 
+     (place-image/align (rendercols) START_OF_STAFF TOP_OF_STAFF
+                        "left" "top"
                                  (place-image resetbutton 700 300
                                               (place-image (text "Page" 24 "indigo") 750 20
                                               (place-image arrow_right 800 100 
@@ -90,7 +92,7 @@
                                                                         (place-image play-button
                                                                                      700 500
                                                                         (empty-scene 900 700)))))))]                
-    [(cons? lon) (place-image (rectangle 75 75 "solid" "red") (beatlookup (note-beat (first lon))) (pitchlookup (note-pitch (first lon))) (makescene (rest lon)))]))
+    [(cons? lon) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red") (beatlookup (note-beat (first lon))) (pitchlookup (note-pitch (first lon))) (makescene (rest lon)))]))
 
 ; the row of rectangle
 (define (rendercols) 
@@ -121,26 +123,26 @@
 ; looks at the pitch of the note and determines the v-location in which it should go
 (define (pitchlookup pitch)
   (cond
-    [(= pitch 60) (+ TOP_OF_STAFF 562)]
-    [(= pitch 62) (+ TOP_OF_STAFF 487)]
-    [(= pitch 64) (+ TOP_OF_STAFF 412)]
-    [(= pitch 65) (+ TOP_OF_STAFF 337)]
-    [(= pitch 67) (+ TOP_OF_STAFF 262)]
-    [(= pitch 69) (+ TOP_OF_STAFF 187)]
-    [(= pitch 71) (+ TOP_OF_STAFF 112)]
-    [(= pitch 72) (+ TOP_OF_STAFF 37)]))
+    [(= pitch 60) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 8)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 62) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 7)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 64) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 6)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 65) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 5)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 67) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 4)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 69) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 3)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 71) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 2)) (round (/ INTERVAL_HEIGHT 2)))]
+    [(= pitch 72) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 1)) (round (/ INTERVAL_HEIGHT 2)))]))
   
 ; looks at the beat of the note and determines the h-location in which it should go
 (define (beatlookup beat)
   (cond
-    [(= beat 1) (+ START_OF_STAFF 37)]
-    [(= beat 2) (+ START_OF_STAFF 112)]
-    [(= beat 3) (+ START_OF_STAFF 187)]
-    [(= beat 4) (+ START_OF_STAFF 262)]
-    [(= beat 5) (+ START_OF_STAFF 337)]
-    [(= beat 6) (+ START_OF_STAFF 412)]
-    [(= beat 7) (+ START_OF_STAFF 487)]
-    [(= beat 8) (+ START_OF_STAFF 562)]))
+    [(= beat 1) (- (+ START_OF_STAFF (* BEAT_WIDTH 1)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 2) (- (+ START_OF_STAFF (* BEAT_WIDTH 2)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 3) (- (+ START_OF_STAFF (* BEAT_WIDTH 3)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 4) (- (+ START_OF_STAFF (* BEAT_WIDTH 4)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 5) (- (+ START_OF_STAFF (* BEAT_WIDTH 5)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 6) (- (+ START_OF_STAFF (* BEAT_WIDTH 6)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 7) (- (+ START_OF_STAFF (* BEAT_WIDTH 7)) (round (/ BEAT_WIDTH 2)))]
+    [(= beat 8) (- (+ START_OF_STAFF (* BEAT_WIDTH 8)) (round (/ BEAT_WIDTH 2)))]))
                   
 
 ; reset button image
