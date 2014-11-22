@@ -32,11 +32,11 @@
 (define-struct posn [x y])
 
 ; page button image
-(define arrow_right (bitmap/file "Images/arrow.png")) ;bitmap function to load from file to be implemented
+(define arrow_right (bitmap/file "graphics/arrow.png")) ;bitmap function to load from file to be implemented
 (define arrow_left (rotate 180 arrow_right))
 
 ; option button image
-(define options_button (bitmap/file "Images/optionsbutton.png"))
+(define options_button (bitmap/file "graphics/optionsbutton.png"))
 
 ; reset button image
 (define resetbutton
