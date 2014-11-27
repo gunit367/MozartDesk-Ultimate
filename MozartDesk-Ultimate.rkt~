@@ -18,7 +18,7 @@
 
 ; initial state of the world for the program
 (define default_list empty)
-(define INITIAL_WORLD (make-world default_list 2 0 "paused" "piano" 1))
+(define INITIAL_WORLD (make-world default_list 44100 0 "paused" "piano" 1))
 
 ; a note is a structure that includes
 ; -the type of sound
@@ -59,25 +59,6 @@
    50 50
    (square 100 'solid 'black)))
 
-(define tempoplusbutton
-  (place-image 
-               (text "+" 18 "indigo") 
-               12 12
-               (square 24 "outline" "black")))
-
-(define tempominusbutton
-  (place-image 
-               (text "-" 18 "indigo") 
-               12 12
-               (square 24 "outline" "black")))
-
-(define tempobox
-  (square 35 "outline" "black"))
-(define tempoboxlabel
-  (text "Tempo" 24 "indigo"))
-
-
-  
 
 
 ; the initial rectangle design, represent empty note (no sound will be played for that rectangle when play button is clicked)
@@ -88,7 +69,7 @@
 ; s function takes in a second (time) and produces the frame of that second
 (define (s n)
   (* 44100 n))
- 
+
 ; Basic world dimensions
 (define WORLD_HEIGHT 900)
 (define WORLD_WIDTH 1200)
@@ -123,8 +104,6 @@
                                    450))
 (define exitbuttonpos (make-posn (/ WORLD_WIDTH 2)
                                  600))
-(define tempoboxpos (make-posn 450 100))
-(define temposelpos (make-posn 482 100))
 
 
 ; size of buttons
@@ -156,7 +135,7 @@
                           erasebutton))
 
 
-; Options menu display, doesn't change at all with world state so it is a visual constant 
+; Options menu display, doesn't change at all with world state so it is a visual constant
 (define optionsmenu
   (place-image savebutton
                (posn-x savebuttonpos) (posn-y savebuttonpos)
@@ -189,23 +168,15 @@
                         "left" "middle"
                         (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
                                      (place-image (text (string-append "Page " (number->string page)) 24 "indigo") 
-                                                  (/ (+ (posn-x rightarrowpos) (posn-x leftarrowpos)) 2) 
-                                                  (- (posn-y rightarrowpos) (image-height arrowright))   
-                                                  (place-image arrowright (posn-x rightarrowpos) (posn-y rightarrowpos)
-                                                             (place-image arrowleft (posn-x leftarrowpos) (posn-y rightarrowpos) 
-                                                                         (place-image playbutton
-                                                                               (posn-x playbuttonpos) (posn-y playbuttonpos)
-                                                                                     (place-image optionsbutton (posn-x optionsbuttonpos) 
-                                                                                                  (posn-y optionsbuttonpos)
-                                                                                                        (place-image/align buttonrow (posn-x buttonrowpos) 
-                                                                                                                           (posn-y buttonrowpos) "left" "top"
-                                                                                                                           (place-image tempoboxlabel (- (posn-x tempoboxpos) 70) (posn-y tempoboxpos)
-                                                                                                                               (place-image tempobox (posn-x tempoboxpos) (posn-y tempoboxpos)
-                                                                                                                                      (place-image (text (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "indigo") (posn-x tempoboxpos)
-                                                                                                                                                   (posn-y tempoboxpos)
-                                                                                                                                                   (place-image tempoplusbutton (posn-x temposelpos) (- (posn-y temposelpos) 36)
-                                                                                                                                                   (place-image tempominusbutton (posn-x temposelpos) (+ 36 (posn-y temposelpos))
-                                                                                                                                  (empty-scene WORLD_WIDTH WORLD_HEIGHT))))))))))))))]                
+                                                  (/ (+ (posn-x rightarrowpos) (posn-x leftarrowpos)) 2) (- (posn-y rightarrowpos) (image-height arrowright))
+                                                                                                            (place-image arrowright (posn-x rightarrowpos) (posn-y rightarrowpos)
+                                                                                                                         (place-image arrowleft (posn-x leftarrowpos) (posn-y rightarrowpos) 
+                                                                                                                                      (place-image playbutton
+                                                                                                                                                   (posn-x playbuttonpos) (posn-y playbuttonpos)
+                                                                                                                                                   (place-image optionsbutton (posn-x optionsbuttonpos) (posn-y optionsbuttonpos)
+                                                                                                                                                                (place-image/align buttonrow (posn-x buttonrowpos) (posn-y buttonrowpos)
+                                                                                                                                                                                   "left" "top"
+                                                                                                                                                                                   (empty-scene WORLD_WIDTH WORLD_HEIGHT)))))))))]                
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) 
                         (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red") (beatlookup (note-beat (first lon)) page)
                                      (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w))]
@@ -405,20 +376,6 @@
        (< x (+ (posn-x optionsbuttonpos) (floor (/ (image-width optionsbutton) 2))))))
 
 ; x y -> boolean
-(define (mouseontempoplus? x y)
-  (and (> y (- (- (posn-y temposelpos) 36) (floor (/ (image-height tempoplusbutton) 2))))
-       (< y (+ (- (posn-y temposelpos) 36) (floor (/ (image-height tempoplusbutton) 2))))
-       (> x (- (posn-x temposelpos) (floor (/ (image-width tempoplusbutton) 2))))
-       (< x (+ (posn-x temposelpos) (floor (/ (image-width tempoplusbutton) 2))))))
-
-; x y -> boolean
-(define (mouseontempominus? x y)
-    (and (> y (- (+ (posn-y temposelpos) 36) (floor (/ (image-height tempominusbutton) 2))))
-       (< y (+ (+ (posn-y temposelpos) 36) (floor (/ (image-height tempominusbutton) 2))))
-       (> x (- (posn-x temposelpos) (floor (/ (image-width tempominusbutton) 2))))
-       (< x (+ (posn-x temposelpos) (floor (/ (image-width tempominusbutton) 2))))))
-
-; x y -> boolean
 (define (mouseonsave? x y)
   (and (> y (- (posn-y savebuttonpos) (floor (/ (image-height savebutton) 2))))
        (< y (+ (posn-y savebuttonpos) (floor (/ (image-height savebutton) 2))))
@@ -513,10 +470,6 @@
         [(and (string=? evt "button-down") (mouseonbuttons? x y)) (buttonrowfunc w x y)]
         [(and (string=? evt "button-down") (mouseonoptions? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
                                                                               "options" (world-selected w) (world-page w))]
-        [(and (string=? evt "button-down") (mouseontempoplus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "+") (world-curbeat w)
-                                                                                (world-modestate w) (world-selected w) (world-page w))]
-        [(and (string=? evt "button-down") (mouseontempominus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "-") (world-curbeat w)
-                                                                                 (world-modestate w) (world-selected w) (world-page w))]
         [else w]))
 
 
@@ -527,12 +480,6 @@
                                                                              "paused" (world-selected w) (world-page w))]
         [(and (string=? evt "button-down") (mouseonexit? x y)) w]
         [else w]))
-
-(define (change-tempo tempo type)
-  (cond
-    [(and (string=? type "+") (< tempo 240)) (+ tempo .05)]
-    [(and (string=? type "-") (> tempo 0)) (- tempo .05)]
-    [else tempo]))
 ; number string -> number
 ; changes the page of the composer
 ; this function ensures the page doesn't below the value of one
@@ -571,7 +518,7 @@
 ; note -> list with rsound and play time
 ; turn a note into a sound and a time to be useed in the make-song function
 (define (make-note+time n tempo)(cond
-                                  [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]))
+                                  [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (* tempo (note-beat n)))]))
 
 ; list-of-notes tempo -> list of (list sound time)
 ; turns a list of notes into a list of list of sounds and times for the assemble function
