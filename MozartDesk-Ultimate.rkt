@@ -513,7 +513,7 @@ reset)
 (define (mainmousefn w x y evt)
   (cond [(and (string=? evt "button-down") (mouseonstaff? x y)) (buttondownhandler w x y)] ;(buttondownhandler w x y)]
         [(and (string=? evt "button-down") (mouseonreset? x y)) INITIAL_WORLD]
-        [(and (string=? evt "button-down") (mouseonplay? x y)) (both (play (make-song (world-worldlist w) (world-tempo w))) w)]
+        [(and (string=? evt "button-down") (mouseonplay? x y)) (play-pressed w)]
         [(and (string=? evt "button-down") (mouseonleftpage? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
                                                                                (world-modestate w) (world-selected w)
                                                                                (change-page (world-page w) "back"))]
@@ -583,7 +583,7 @@ reset)
 (define (make-note+time n tempo)(cond
                                   [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]))
 
-; list-of-notes tempo -> list of (list sound time)
+; list-of-notes tempo -> list (list sound time)
 ; turns a list of notes into a list of list of sounds and times for the assemble function
 (define (make-notes+times lon tempo)(cond
                                       [(empty? lon) empty]
@@ -628,6 +628,10 @@ reset)
 #;(define (loadfile w x y)
     (string->structs (savefile w x y)))
 
+
+;play-button function   world -> world, plays song
+;this function is called in the mainmousefn function, when the play button is clicked.
+(define (play-pressed w)((both (play(make-song (world-worldlist w) (world-tempo w))) w)))
 
 ;;Reference
 ; (define-struct world (worldlist tempo curbeat modestate selected page))
