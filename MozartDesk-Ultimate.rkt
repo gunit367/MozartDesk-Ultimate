@@ -43,6 +43,7 @@
 (define arrowl (bitmap/file "Images/arrowl.png"))
 (define arrowr (bitmap/file "Images/arrowr.png"))
 (define optionsbackground (bitmap/file "Images/optionsbackground.jpg"))
+(define pausebutton (bitmap/file "Images/pausebutton.png"))
 
 ; page button image
 (define arrowleft 
