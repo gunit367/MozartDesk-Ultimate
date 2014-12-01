@@ -8,7 +8,7 @@
 
 ;;world definition includes:
 ; -a complete list of the world's notes
-; -the tempo of the world
+; -the tempo of the world (in beats per second)
 ; -the current beat that the world is on
 ; -the mode state of the world, including whether it's played or paused
 ; -the currently selected icon to place on the grid
@@ -632,7 +632,7 @@ reset)
 
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
-(define (play-pressed w)((both (play(make-song (world-worldlist w) (world-tempo w))) w)))
+(define (play-pressed w) ((both (play (make-song (world-worldlist w) (world-tempo w))) w)))
 
 ;;Reference
 ; (define-struct world (worldlist tempo curbeat modestate selected page))
