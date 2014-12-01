@@ -20,6 +20,7 @@
 (define default_list empty)
 (define INITIAL_WORLD (make-world default_list 2 0 "paused" "piano" 1))
 
+
 ; a note is a structure that includes
 ; -the type of sound
 ; -the pitch of a sound
@@ -27,6 +28,8 @@
 ; (make-note (string number number)
 (define-struct note (type pitch beat) #:transparent)
 
+
+(define test-world (make-world (list (make-note "piano" 55 2)) 2 0 "paused" "piano" 1))
 ; required function
 (define (both a b) b)
 (define-struct posn [x y])
@@ -629,9 +632,16 @@ reset)
     (string->structs (savefile w x y)))
 
 
+;;gets the current duration in frames of the song
+(define (song-length w)(rs-frames (make-song (world-worldlist w) (world-tempo w))))
+;(check-expect (song-length test-world) 22050)
+
+;;converts world-curbeat to the current frame
+(define (current-frame w)(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w)))))
+
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
-(define (play-pressed w)((both (play(make-song (world-worldlist w) (world-tempo w))) w)))
+(define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) w))
 
 ;;Reference
 ; (define-struct world (worldlist tempo curbeat modestate selected page))
