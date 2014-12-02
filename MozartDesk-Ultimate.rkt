@@ -2,6 +2,8 @@
 (require 2htdp/image)
 (require 2htdp/universe)
 (require 2htdp/batch-io)
+(require test-engine/racket-tests)
+(require rackunit)
 (require rsound)
 (require rsound/piano-tones)
 (require "world-save.rkt")
@@ -12,7 +14,7 @@
 ; -the current beat that the world is on
 ; -the mode state of the world, including whether it's played or paused
 ; -the currently selected icon to place on the grid
-; -the current page (Currently not in use)
+; -the current page
 ; (make-world (list frames number string string number)
 (define-struct world (worldlist tempo curbeat modestate selected page) #:transparent)
 
@@ -620,17 +622,19 @@ reset)
   (list (list "world" make-world)
         (list "note" make-note)))
 
-(define (string->structs w)
-  (string->struct/maker maker-table w))
+(define my-table (list (list "world" make-world)))
 
-;(string->structs (write-to-string INITIAL_WORLD)) result: (world '() 44100 0 "paused" "piano" 1)
-;(write-to-string INITIAL_WORLD) result: "#(struct:world () 44100 0 \"paused\" \"piano\" 1)"
+(check-expect (string->structs (write-to-string INITIAL_WORLD)) (world '() 2 0 "paused" "piano" 1))
+(check-expect (write-to-string INITIAL_WORLD) "#(struct:world () 2 0 \"paused\" \"piano\" 1)")
 
-#;(define (savefile w x y)
-    (write-to-string (buttondownhandler w x y)))
+(define SAVED-FILE-NAME "saved-world.txt")
+; saving the world
+(define (savefile w)
+    (write-file SAVED-FILE-NAME (write-to-string w)))
 
-#;(define (loadfile w x y)
-    (string->structs (savefile w x y)))
+; load a saved world
+(define (loadfile w)
+    (string->structs (read-file SAVED-FILE-NAME)))
 
 
 ;;gets the current duration in frames of the song
@@ -648,13 +652,11 @@ reset)
 (define (play-pressed w) ((both (play (make-song (world-worldlist w) (world-tempo w))) w)))
 >>>>>>> origin/master
 
-;;Reference
-; (define-struct world (worldlist tempo curbeat modestate selected page))
-; (define-struct note (type pitch beat))
-; (define default_list empty)
-; (define INITIAL_WORLD (make-world default_list 44100 0 "paused" "piano" 1))
+
 (big-bang INITIAL_WORLD 
           [on-mouse mousefn]
           [on-draw renderfn]
           [on-tick tick]
           )
+          
+  (test)
