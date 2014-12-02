@@ -1,12 +1,6 @@
 #lang racket
 (require rackunit)
 
-;;world structure for the save-load function
-(define-struct world (worldlist tempo curbeat modestate selected page) #:transparent)
-(define default_list empty)
-(define INITIAL_WORLD (make-world default_list 44100 0 "paused" "piano" 1))
-(define-struct note (type pitch beat) #:transparent)
-
 (provide write-to-string
          read-from-string
          string->struct/maker)
@@ -47,5 +41,4 @@
      (map (lambda (data) (vectors->structs table data)) data)]
     [else data]))
 
-(define my-table (list (list "world" make-world)))
 
