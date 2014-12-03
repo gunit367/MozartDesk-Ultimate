@@ -624,6 +624,9 @@ reset)
 
 (define my-table (list (list "world" make-world)))
 
+(define (string->structs w) 
+  (string->struct/maker maker-table w))
+
 (check-expect (string->structs (write-to-string INITIAL_WORLD)) (world '() 2 0 "paused" "piano" 1))
 (check-expect (write-to-string INITIAL_WORLD) "#(struct:world () 2 0 \"paused\" \"piano\" 1)")
 
@@ -646,11 +649,7 @@ reset)
 
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
-<<<<<<< HEAD
 (define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) w))
-=======
-(define (play-pressed w) ((both (play (make-song (world-worldlist w) (world-tempo w))) w)))
->>>>>>> origin/master
 
 
 (big-bang INITIAL_WORLD 
