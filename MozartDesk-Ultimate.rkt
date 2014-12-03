@@ -105,8 +105,8 @@ reset)
   (* 44100 n))
  
 ; Basic world dimensions
-(define WORLD_HEIGHT 900)
-(define WORLD_WIDTH 1200)
+(define WORLD_HEIGHT (image-height background))
+(define WORLD_WIDTH (image-width background))
 
 ; the rectangles' width and height
 (define BEATS_PER_PAGE 16)
@@ -114,7 +114,7 @@ reset)
 (define BEAT_WIDTH (/ WORLD_WIDTH BEATS_PER_PAGE))
 
 ; constant definition for the beat and position of staff
-(define MIDDLE_OF_STAFF_V (/ WORLD_HEIGHT 2))
+(define MIDDLE_OF_STAFF_V (- (/ WORLD_HEIGHT 2) 50))
 (define TOP_OF_STAFF (- MIDDLE_OF_STAFF_V (* 4 INTERVAL_HEIGHT))) ; y coordinate of the top of the staff
 (define BOTTOM_OF_STAFF (+ TOP_OF_STAFF (* 8 INTERVAL_HEIGHT)))
 (define START_OF_STAFF 0) ; x coordinate of the far left side of the staff
@@ -122,14 +122,15 @@ reset)
 
 
 ; positions of all buttons
-(define resetbuttonpos (make-posn 1000 100))
+(define resetbuttonpos (make-posn 800 690))
 (define leftarrowpos (make-posn 675 100))
 (define rightarrowpos (make-posn (+ (posn-x leftarrowpos)
                                     (image-width arrowleft))
                                  (posn-y leftarrowpos)))
-(define playbuttonpos (make-posn 75 745))
-(define optionsbuttonpos (make-posn 1105 870))
-(define buttonrowpos (make-posn 50 125)) ; pos of far left top of button row
+(define playbuttonpos (make-posn 75 690))
+(define optionsbuttonpos (make-posn (- WORLD_WIDTH (/ (image-width optionsbutton) 2))
+                                    (image-height optionsbutton)))
+(define buttonrowpos (make-posn 50 75)) ; pos of far left top of button row
 (define savebuttonpos (make-posn (/ WORLD_WIDTH 2)
                                  150))
 (define loadbuttonpos (make-posn (/ WORLD_WIDTH 2)
@@ -537,8 +538,8 @@ reset)
 
 
 (define (optionsmousefn w x y evt)
-  (cond [(and (string=? evt "button-down") (mouseonsave? x y)) w]
-        [(and (string=? evt "button-down") (mouseonload? x y)) w]
+  (cond [(and (string=? evt "button-down") (mouseonsave? x y)) (both (savefile w) w)]
+        [(and (string=? evt "button-down") (mouseonload? x y)) (loadfile w)]
         [(and (string=? evt "button-down") (mouseonresume? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
                                                                              "paused" (world-selected w) (world-page w))]
         [(and (string=? evt "button-down") (mouseonexit? x y)) w]
