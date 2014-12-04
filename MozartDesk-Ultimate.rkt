@@ -192,6 +192,8 @@ reset)
         [(string=? (world-modestate w) "options") optionsmenu]
         [else (empty-scene 100 100)]))
 
+(define (detplaystate playstate)
+  (if (string=? playstate "playing") pausebutton playbutton))
 
 ; list number world -> image
 ; Creates a image depending on the worldlist's list of notes
@@ -206,7 +208,7 @@ reset)
                                                   (- (posn-y rightarrowpos) (image-height arrowright))   
                                                   (place-image arrowright (posn-x rightarrowpos) (posn-y rightarrowpos)
                                                              (place-image arrowleft (posn-x leftarrowpos) (posn-y rightarrowpos) 
-                                                                         (place-image playbutton
+                                                                         (place-image (detplaystate (world-modestate w))
                                                                                (posn-x playbuttonpos) (posn-y playbuttonpos)
                                                                                      (place-image optionsbutton (posn-x optionsbuttonpos) 
                                                                                                   (posn-y optionsbuttonpos)
@@ -634,9 +636,15 @@ reset)
 ;;converts world-curbeat to the current frame
 (define (current-frame w)(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w)))))
 
+(define (playbuttonstate pbs)
+  (if (string=? pbs "playing") "paused" "playing"))
+
+
+  
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
-(define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) w))
+(define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
+                              (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (playbuttonstate (world-modestate w)) (world-selected w) (world-page w))))
 
 (big-bang INITIAL_WORLD 
           [on-mouse mousefn]
