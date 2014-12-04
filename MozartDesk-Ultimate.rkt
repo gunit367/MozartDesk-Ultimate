@@ -49,10 +49,13 @@
 (define reset (bitmap/file "Images/resetbutton.png"))
 (define optionsbutton (bitmap/file "Images/optionsbutton.png"))
 (define pausebutton (bitmap/file "Images/pausebutton.png"))
+(define shutdownbackground (bitmap/file "Images/shutdownbackground.jpg"))
 
 ; previous and next page buttons
 (define arrowleft (bitmap/file "Images/arrowl.png"))
 (define arrowright (bitmap/file "Images/arrowr.png"))
+
+
 
 
 
@@ -180,6 +183,8 @@ reset)
                                          (place-image exitbutton
                                                       (posn-x exitbuttonpos) (posn-y exitbuttonpos)
                                                       optionsbackground)))))
+(define shutdowndialog
+  (place-image shutdownbackground 512 512 (empty-scene (image-width shutdownbackground) (image-height shutdownbackground))))
 
 
 ; world -> world
@@ -190,6 +195,7 @@ reset)
              (string=? (world-modestate w) "paused"))
          (makescene (world-worldlist w) (world-page w) w)]
         [(string=? (world-modestate w) "options") optionsmenu]
+        [(string=? (world-modestate w) "shutdown") shutdowndialog]
         [else (empty-scene 100 100)]))
 
 (define (detplaystate playstate)
@@ -518,7 +524,7 @@ reset)
         [(and (string=? evt "button-down") (mouseonload? x y)) (loadfile w)]
         [(and (string=? evt "button-down") (mouseonresume? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
                                                                              "paused" (world-selected w) (world-page w))]
-        [(and (string=? evt "button-down") (mouseonexit? x y)) w]
+        [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w)))]
         [else w]))
 
 ; number string -> number
@@ -547,7 +553,7 @@ reset)
 (define (buttondownhandler w x y)
   (cond 
     [(and (note-exists? x y (mousecol x (world-page w)) (world-worldlist w) (world-page w))
-          (string=? (world-selected w) "eraser")) (delete-note x y (world-page w) (world-worldlist w))]
+          (string=? (world-selected w) "erase")) (delete-note x y (world-page w) (world-worldlist w))]
     [else (make-world (cons (new-note (mousecol x (world-page w)) (mouserow y) (world-selected w) (world-curbeat w) (world-page w)) (world-worldlist w))
                       (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w))]))
 
@@ -561,7 +567,7 @@ reset)
 ; world number number list -> note (structure)
 ; deletes note from the worldlist
 (define (delete-note w x y lon)
-  (remove (make-note "don'tcare" (findpitch (mouserow y)) (mousecol x (world-page w)) (lambda (pitch beat note) 
+  (remove (make-note "piano" (findpitch (mouserow y)) (mousecol x (world-page w)) (lambda (pitch beat note) 
                                                                                         (and (= pitch (note-pitch note)) (= beat (note-beat note)))))))
 
 
@@ -646,10 +652,12 @@ reset)
 (define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
                               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (playbuttonstate (world-modestate w)) (world-selected w) (world-page w))))
 
+
 (big-bang INITIAL_WORLD 
           [on-mouse mousefn]
           [on-draw renderfn]
           [on-tick tick]
+         
           )
           
   (test)
