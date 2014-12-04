@@ -36,26 +36,23 @@
 (define (both a b) b)
 (define-struct posn [x y])
 
-; option button image
-(define optionsbutton (bitmap/file "Images/optionsbutton.png"))
+; option world image
+(define optionsbackground (bitmap/file "Images/optionsbackground.jpg"))
 (define savebutton (bitmap/file "Images/savebutton.png"))
 (define loadbutton (bitmap/file "Images/loadbutton.png"))
 (define exitbutton (bitmap/file "Images/exitbutton.png"))
 (define resumebutton (bitmap/file "Images/resumebutton.png"))
+
+; composer world image
 (define background (bitmap/file "Images/background.png"))
 (define pbutton (bitmap/file "Images/playbutton.png"))
 (define reset (bitmap/file "Images/resetbutton.png"))
-(define arrowl (bitmap/file "Images/arrowl.png"))
-(define arrowr (bitmap/file "Images/arrowr.png"))
-(define optionsbackground (bitmap/file "Images/optionsbackground.jpg"))
+(define optionsbutton (bitmap/file "Images/optionsbutton.png"))
 (define pausebutton (bitmap/file "Images/pausebutton.png"))
 
-; page button image
-(define arrowleft 
-  arrowl)
-
-(define arrowright ;(rotate 180 arrow_right))
- arrowr)
+; previous and next page buttons
+(define arrowleft (bitmap/file "Images/arrowl.png"))
+(define arrowright (bitmap/file "Images/arrowr.png"))
 
 
 
@@ -139,8 +136,8 @@ reset)
                                    450))
 (define exitbuttonpos (make-posn (/ WORLD_WIDTH 2)
                                  600))
-(define tempoboxpos (make-posn 450 100))
-(define temposelpos (make-posn 482 100))
+(define tempoboxpos (make-posn 450 90))
+(define temposelpos (make-posn 482 90))
 
 
 ; size of buttons
@@ -172,7 +169,7 @@ reset)
                           erasebutton))
 
 
-; Options menu display, doesn't change at all with world state so it is a visual constant 
+; Options menu display, doesn't change at all with world state so it is a visual constant
 (define optionsmenu
   (place-image savebutton
                (posn-x savebuttonpos) (posn-y savebuttonpos)
@@ -282,7 +279,7 @@ reset)
 
 
 ; number -> number (posn-y)
-; looks at the pitch of the note and determines the v-location in which it should go
+; looks at the pitch of the note and determines the row in which the note should go 
 (define (pitchlookup pitch)
   (cond
     [(= pitch 60) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 8)) (round (/ INTERVAL_HEIGHT 2)))] 
@@ -292,10 +289,14 @@ reset)
     [(= pitch 67) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 4)) (round (/ INTERVAL_HEIGHT 2)))] 
     [(= pitch 69) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 3)) (round (/ INTERVAL_HEIGHT 2)))] 
     [(= pitch 71) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 2)) (round (/ INTERVAL_HEIGHT 2)))] 
-    [(= pitch 72) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 1)) (round (/ INTERVAL_HEIGHT 2)))])) 
+    [(= pitch 72) (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT 1)) (round (/ INTERVAL_HEIGHT 2)))]))
+
+(check-expect (pitchlookup 60) 502)
+(check-expect (pitchlookup 72) 166)
 
 ; number number -> number (posn-x)
-; looks at the beat of the note and determines the h-location in which it should go
+; looks at the beat of the note and determines the column in which the note should go
+
 (define (beatlookup beat page)
   (cond
     [(= (- beat (* (- page 1) BEATS_PER_PAGE)) 1) (- (+ START_OF_STAFF (* BEAT_WIDTH 1)) (round (/ BEAT_WIDTH 2)))]
@@ -315,7 +316,8 @@ reset)
     [(= (- beat (* (- page 1) BEATS_PER_PAGE)) 15) (- (+ START_OF_STAFF (* BEAT_WIDTH 15)) (round (/ BEAT_WIDTH 2)))]
     [(= (- beat (* (- page 1) BEATS_PER_PAGE)) 16) (- (+ START_OF_STAFF (* BEAT_WIDTH 16)) (round (/ BEAT_WIDTH 2)))]))
 
-
+; note number -> boolean
+; checks if a note is on that page
 (define (noteonpage? note page)
   (= (ceiling (/ (note-beat note) BEATS_PER_PAGE)) page ))
 
@@ -383,127 +385,94 @@ reset)
        (> y (posn-y buttonrowpos))
        (< y (+ (posn-y buttonrowpos) soundbuttonside))))
 
+(define (posn-check buttonpos button n round-back x y)
+  (and (> y (- (+ (posn-y buttonpos) n) (- (floor (/ (image-height button) 2)) round-back)))
+       (< y (+ (+ (posn-y buttonpos) n) (- (floor (/ (image-height button) 2)) round-back)))
+       (> x (- (posn-x buttonpos) (floor (/ (image-width button) 2))))
+       (< x (+ (posn-x buttonpos) (floor (/ (image-width button) 2))))))
+
 ; x y -> boolean
 ; checks if the mouse coordinates are on the reset button
 (define (mouseonreset? x y)
-  (and (> y (- (posn-y resetbuttonpos) (/ (image-height resetbutton) 2)))
-       (< y (+ (posn-y resetbuttonpos) (/ (image-height resetbutton) 2)))
-       (> x (- (posn-x resetbuttonpos) (/ (image-width resetbutton) 2)))
-       (< x (+ (posn-x resetbuttonpos) (/ (image-width resetbutton) 2)))))
+  (posn-check resetbuttonpos resetbutton 0 0.5 x y))
 
 ; x y -> boolean
 ; checks if the mouse coordinates are on the play button
 (define (mouseonplay? x y)
-  (and (> y (- (posn-y playbuttonpos) (/ (image-height playbutton) 2)))
-       (< y (+ (posn-y playbuttonpos) (/ (image-height playbutton) 2)))
-       (> x (- (posn-x playbuttonpos) (/ (image-width playbutton) 2)))
-       (< x (+ (posn-x playbuttonpos) (/ (image-width playbutton) 2)))))
+  (posn-check playbuttonpos playbutton 0 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the previous page arrow button
 (define (mouseonleftpage? x y)
-  (and (> y (- (posn-y leftarrowpos) (floor (/ (image-height arrowleft) 2))))
-       (< y (+ (posn-y leftarrowpos) (floor (/ (image-height arrowleft) 2))))
-       (> x (- (posn-x leftarrowpos) (floor (/ (image-width arrowleft) 2))))
-       (< x (+ (posn-x leftarrowpos) (floor (/ (image-width arrowleft) 2))))))
-
+  (posn-check leftarrowpos arrowleft 0 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the forward page arrow button
 (define (mouseonrightpage? x y)
-  (and (> y (- (posn-y rightarrowpos) (floor (/ (image-height arrowright) 2))))
-       (< y (+ (posn-y rightarrowpos) (floor (/ (image-height arrowright) 2))))
-       (> x (- (posn-x rightarrowpos) (floor (/ (image-width arrowright) 2))))
-       (< x (+ (posn-x rightarrowpos) (floor (/ (image-width arrowright) 2))))))
+  (posn-check rightarrowpos arrowright 0 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the option button from the composer screen
 (define (mouseonoptions? x y)
-  (and (> y (- (posn-y optionsbuttonpos) (floor (/ (image-height optionsbutton) 2))))
-       (< y (+ (posn-y optionsbuttonpos) (floor (/ (image-height optionsbutton) 2))))
-       (> x (- (posn-x optionsbuttonpos) (floor (/ (image-width optionsbutton) 2))))
-       (< x (+ (posn-x optionsbuttonpos) (floor (/ (image-width optionsbutton) 2))))))
+  (posn-check optionsbuttonpos optionsbutton 0 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the increased tempo button
 (define (mouseontempoplus? x y)
-  (and (> y (- (- (posn-y temposelpos) 36) (floor (/ (image-height tempoplusbutton) 2))))
-       (< y (+ (- (posn-y temposelpos) 36) (floor (/ (image-height tempoplusbutton) 2))))
-       (> x (- (posn-x temposelpos) (floor (/ (image-width tempoplusbutton) 2))))
-       (< x (+ (posn-x temposelpos) (floor (/ (image-width tempoplusbutton) 2))))))
+  (posn-check temposelpos tempoplusbutton -36 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the decreased tempo button
 (define (mouseontempominus? x y)
-    (and (> y (- (+ (posn-y temposelpos) 36) (floor (/ (image-height tempominusbutton) 2))))
-       (< y (+ (+ (posn-y temposelpos) 36) (floor (/ (image-height tempominusbutton) 2))))
-       (> x (- (posn-x temposelpos) (floor (/ (image-width tempominusbutton) 2))))
-       (< x (+ (posn-x temposelpos) (floor (/ (image-width tempominusbutton) 2))))))
+  (posn-check temposelpos tempominusbutton 36 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the save button from option menu
 (define (mouseonsave? x y)
-  (and (> y (- (posn-y savebuttonpos) (floor (/ (image-height savebutton) 2))))
-       (< y (+ (posn-y savebuttonpos) (floor (/ (image-height savebutton) 2))))
-       (> x (- (posn-x savebuttonpos) (floor (/ (image-width savebutton) 2))))
-       (< x (+ (posn-x savebuttonpos) (floor (/ (image-width savebutton) 2))))))
+  (posn-check savebuttonpos savebutton 0 0 x y))
 
-;x y -> boolean
+; x y -> boolean
+; checks if the mouse coordinates are on the load button from option menu
 (define (mouseonload? x y)
-  (and (> y (- (posn-y loadbuttonpos) (floor (/ (image-height loadbutton) 2))))
-       (< y (+ (posn-y loadbuttonpos) (floor (/ (image-height loadbutton) 2))))
-       (> x (- (posn-x loadbuttonpos) (floor (/ (image-width loadbutton) 2))))
-       (< x (+ (posn-x loadbuttonpos) (floor (/ (image-width loadbutton) 2))))))
+  (posn-check loadbuttonpos loadbutton 0 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the resume button from option menu
 (define (mouseonresume? x y)
-  (and (> y (- (posn-y resumebuttonpos) (floor (/ (image-height resumebutton) 2))))
-       (< y (+ (posn-y resumebuttonpos) (floor (/ (image-height resumebutton) 2))))
-       (> x (- (posn-x resumebuttonpos) (floor (/ (image-width resumebutton) 2))))
-       (< x (+ (posn-x resumebuttonpos) (floor (/ (image-width resumebutton) 2))))))
+  (posn-check resumebuttonpos resumebutton 0 0 x y))
 
 ; x y -> boolean
+; checks if the mouse coordinates are on the exit button from option menu
 (define (mouseonexit? x y)
-  (and (> y (- (posn-y exitbuttonpos) (floor (/ (image-height exitbutton) 2))))
-       (< y (+ (posn-y exitbuttonpos) (floor (/ (image-height exitbutton) 2))))
-       (> x (- (posn-x exitbuttonpos) (floor (/ (image-width exitbutton) 2))))
-       (< x (+ (posn-x exitbuttonpos) (floor (/ (image-width exitbutton) 2))))))
+  (posn-check exitbuttonpos exitbutton 0 0 x y))
 
+(check-expect (posn-check resetbuttonpos resetbutton 0 0.5 800 700) true) ;coordinates within the reset button
 
+; helper function
+; x y number -> boolean
+; icon-number represents the order of icons. Ex: piano icon is the first icon, so it has icon-number 1
+(define (soundbutton-check x y icon-number)
+  (and (> x (+ (posn-x buttonrowpos) (* (- icon-number 1) soundbuttonside)))
+       (< x (+ (posn-x buttonrowpos) (* icon-number soundbuttonside)))
+       (> y (posn-y buttonrowpos))
+       (< y (+ (posn-y buttonrowpos) soundbuttonside))))
 
+; helper function
+; world string -> world
+; sound-type represents type of sound like piano
+(define (given-sound w sound-type)
+  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) sound-type (world-page w)))
 
-; world x y -> world
-; checks which sound buttons the mouse coordinates are on and creates a world with a specific world-selected correspond to that specific sound button
+; world posn-x posn-y -> world
+; checks if the mouse coordinates are on a specific sound button and if it is, then creates a world with that specific sound that can be added to the staff
 (define (buttonrowfunc w x y)
-  (cond [(and (> x (posn-x buttonrowpos))   ;first button
-              (< x (+ (posn-x buttonrowpos) soundbuttonside))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "piano" (world-page w))]
-        [(and (> x (+ (posn-x buttonrowpos) (* 1 soundbuttonside 1)))   ; second
-              (< x (+ (posn-x buttonrowpos) (* 2 soundbuttonside)))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "temp" (world-page w))]
-        [(and (> x (+ (posn-x buttonrowpos) (* 2 soundbuttonside 1)))   
-              (< x (+ (posn-x buttonrowpos) (* 3 soundbuttonside)))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "temp2" (world-page w))]
-        [(and (> x (+ (posn-x buttonrowpos) (* 3 soundbuttonside 1)))   
-              (< x (+ (posn-x buttonrowpos) (* 4 soundbuttonside)))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "temp3" (world-page w))]
-        [(and (> x (+ (posn-x buttonrowpos) (* 4 soundbuttonside 1)))   
-              (< x (+ (posn-x buttonrowpos) (* 5 soundbuttonside)))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "temp4" (world-page w))]
-        [(and (> x (+ (posn-x buttonrowpos) (* 5 soundbuttonside 1)))   
-              (< x (+ (posn-x buttonrowpos) (* 6 soundbuttonside)))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "temp5" (world-page w))]
-        [(and (> x (+ (posn-x buttonrowpos) (* 6 soundbuttonside 1)))   
-              (< x (+ (posn-x buttonrowpos) (* 7 soundbuttonside)))
-              (> y (posn-y buttonrowpos))
-              (< y (+ (posn-y buttonrowpos) soundbuttonside))) 
-         (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) "erase" (world-page w))]))
+  (cond [(soundbutton-check x y 1) (given-sound w "piano")]
+        [(soundbutton-check x y 2) (given-sound w "temp")]
+        [(soundbutton-check x y 3) (given-sound w "temp2")]
+        [(soundbutton-check x y 4) (given-sound w "temp3")]
+        [(soundbutton-check x y 5) (given-sound w "temp4")]
+        [(soundbutton-check x y 6) (given-sound w "temp5")]
+        [(soundbutton-check x y 7) (given-sound w "erase")]))
 
 
 ;(define-struct world (worldlist tempo curbeat modestate selected page))
@@ -512,11 +481,12 @@ reset)
   (cond [(string=? (world-modestate w) "options") (optionsmousefn w x y evt)]
         [(or (string=? (world-modestate w) "playing")
              (string=? (world-modestate w) "paused")) (mainmousefn w x y evt)]))
-; Handles the mouse for a button-down event on the main screen
+
 ; world x y event -> world
-; By pressing the block, the block will turn from outline to a colored solid block, depended on the current world-selected
-; By pressing the reset button, the block will all turn back to outline
-; By pressing the play button, the program will play the rsound depending on which blocks are currently red solid
+; handles the mouse events on the main screen
+; by pressing the block, the block will turn from outline to a colored solid block, depended on the current world-selected
+; by pressing the reset button, the block will all turn back to outline
+; by pressing the play button, the program will play the rsound depending on which blocks are currently red solid
 (define (mainmousefn w x y evt)
   (cond [(and (string=? evt "button-down") (mouseonstaff? x y)) (buttondownhandler w x y)] ;(buttondownhandler w x y)]
         [(and (string=? evt "button-down") (mouseonreset? x y)) INITIAL_WORLD]
@@ -536,7 +506,11 @@ reset)
                                                                                  (world-modestate w) (world-selected w) (world-page w))]
         [else w]))
 
-
+; world posn-x posn-y mouse-event -> world
+; handles the mouse events on the option menu
+; by pressing the save function, the program will save the current world into a text file for it to be loaded later
+; by pressing the load function, the program will load the most recently saved world to be used as the current world
+; by pressing the exit button, the program will exit the program and goes to a blank screen
 (define (optionsmousefn w x y evt)
   (cond [(and (string=? evt "button-down") (mouseonsave? x y)) (both (savefile w) w)]
         [(and (string=? evt "button-down") (mouseonload? x y)) (loadfile w)]
@@ -545,11 +519,15 @@ reset)
         [(and (string=? evt "button-down") (mouseonexit? x y)) w]
         [else w]))
 
+; number string -> number
+; by pressing the increased tempo button, the tempo will increase by 3
+; by pressing the decreased tempo button, the tempo will decrease by 3
 (define (change-tempo tempo type)
   (cond
     [(and (string=? type "+") (< tempo 240)) (+ tempo .05)]
     [(and (string=? type "-") (> tempo 0)) (- tempo .05)]
     [else tempo]))
+
 ; number string -> number
 ; changes the page of the composer
 ; this function ensures the page doesn't below the value of one
@@ -618,25 +596,33 @@ reset)
 ; used to stop the sound for the tick function for right now
 ; (stop)
 
-;;magic-write function for saving and loading the world
+; utilized world-sav.rkt for saving and loading the world
+; creating a list of the fields in the structure
 (define maker-table
   (list (list "world" make-world)
         (list "note" make-note)))
 
-(define my-table (list (list "world" make-world)))
+(define my-table (list (list "world" make-world)
+                       (list "note" make-note)))
 
+; string -> structure
+; converts a string into a structure
 (define (string->structs w) 
   (string->struct/maker maker-table w))
 
 (check-expect (string->structs (write-to-string INITIAL_WORLD)) (world '() 2 0 "paused" "piano" 1))
 (check-expect (write-to-string INITIAL_WORLD) "#(struct:world () 2 0 \"paused\" \"piano\" 1)")
 
+; test file of the saved world
 (define SAVED-FILE-NAME "saved-world.txt")
-; saving the world
+
+; world -> text file
+; saving the current world into a text file
 (define (savefile w)
     (write-file SAVED-FILE-NAME (write-to-string w)))
 
-; load a saved world
+; text file -> world
+; load a saved world that is in a text file
 (define (loadfile w)
     (string->structs (read-file SAVED-FILE-NAME)))
 
@@ -651,7 +637,6 @@ reset)
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
 (define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) w))
-
 
 (big-bang INITIAL_WORLD 
           [on-mouse mousefn]
