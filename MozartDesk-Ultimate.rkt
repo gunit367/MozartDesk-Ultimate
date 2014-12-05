@@ -151,7 +151,7 @@ reset)
                                        (square soundbuttonside 'outline 'black)))
 (define pianobutton (overlay (text "P" soundbuttonside "black")
                              soundbuttonbackground))
-(define tempbutton (overlay (text "#" soundbuttonside "black")
+(define tempbutton (overlay (text "V" soundbuttonside "black")
                             soundbuttonbackground))
 (define tempbutton2 (overlay (text "!!" soundbuttonside "black")
                              soundbuttonbackground))
@@ -231,7 +231,7 @@ reset)
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) 
                         (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red") (beatlookup (note-beat (first lon)) page)
                                      (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w))]
-                       [(and (string=? "temp" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "blue")
+                       [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "blue")
                                                                                                                     (beatlookup (note-beat (first lon)) page) (pitchlookup (note-pitch (first lon))) 
                                                                                                                     (makescene (rest lon) page w))]
                        [(and (string=? "temp2" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "green")
@@ -475,7 +475,7 @@ reset)
 ; checks if the mouse coordinates are on a specific sound button and if it is, then creates a world with that specific sound that can be added to the staff
 (define (buttonrowfunc w x y)
   (cond [(soundbutton-check x y 1) (given-sound w "piano")]
-        [(soundbutton-check x y 2) (given-sound w "temp")]
+        [(soundbutton-check x y 2) (given-sound w "vgame1")]
         [(soundbutton-check x y 3) (given-sound w "temp2")]
         [(soundbutton-check x y 4) (given-sound w "temp3")]
         [(soundbutton-check x y 5) (given-sound w "temp4")]
@@ -572,9 +572,10 @@ reset)
 
 
 ; note -> list with rsound and play time
-; turn a note into a sound and a time to be useed in the make-song function
+; turn a note into a sound and a time to be used in the make-song function
 (define (make-note+time n tempo)(cond
-                                  [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]))
+                                  [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame1") (list (synth-note "vgame" 1 (note-pitch n) (round (* (* 44100 (/ 1 tempo)) (note-beat n)))))]
 
 ; list-of-notes tempo -> list (list sound time)
 ; turns a list of notes into a list of list of sounds and times for the assemble function
@@ -650,7 +651,8 @@ reset)
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
 (define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
-                              (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (playbuttonstate (world-modestate w)) (world-selected w) (world-page w))))
+                              (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (playbuttonstate (world-modestate w)) 
+                                          (world-selected w) (world-page w))))
 
 
 (big-bang INITIAL_WORLD 
