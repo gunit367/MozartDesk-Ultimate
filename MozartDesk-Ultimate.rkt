@@ -30,8 +30,6 @@
 ; (make-note (string number number)
 (define-struct note (type pitch beat) #:transparent)
 
-
-(define test-world (make-world (list (make-note "piano" 55 2)) 2 0 "paused" "piano" 1))
 ; required function
 (define (both a b) b)
 (define-struct posn [x y])
@@ -55,25 +53,13 @@
 (define arrowleft (bitmap/file "Images/arrowl.png"))
 (define arrowright (bitmap/file "Images/arrowr.png"))
 
-
-
-
-
 ; reset button image
-(define resetbutton
-  ;(place-image (text "RESET" 24 'blue)
-  ;             50 50
-  ;             (square 100 'solid 'red)))
-reset)
+(define resetbutton reset)
 
 ; play button image
-(define playbutton
-  ;(place-image
-  ; (rotate 270 (isosceles-triangle 70 35 'solid 'green))
-  ; 50 50
-  ; (square 100 'solid 'black)))
-  pbutton)
+(define playbutton pbutton)
 
+; tempo box and changer button images
 (define tempoplusbutton
   (place-image 
                (text/font "+" 24 "white" "Segoe UI" 'roman 'normal 'normal #f)
@@ -90,10 +76,6 @@ reset)
   (square 35 "outline" "black"))
 (define tempoboxlabel
   (text/font "Tempo" 24 "white" "Segoe UI" 'roman 'normal 'normal #f))
-
-
-  
-
 
 ; the initial rectangle design, represent empty note (no sound will be played for that rectangle when play button is clicked)
 (define (button) (rectangle BEAT_WIDTH INTERVAL_HEIGHT "outline" "white"))
@@ -198,11 +180,21 @@ reset)
         [(string=? (world-modestate w) "shutdown") shutdowndialog]
         [else (empty-scene 100 100)]))
 
+(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1)) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1)))
+
+; string -> image
+; checks if the playstate is in "playing" mode, if it is, then play button becomes pause button
+; if the playstate is in "paused" mode, then pause button becomes play button
 (define (detplaystate playstate)
   (if (string=? playstate "playing") pausebutton playbutton))
 
+(check-expect (detplaystate "paused") playbutton)
+
 ; list number world -> image
 ; Creates a image depending on the worldlist's list of notes
+(define (rectangle-color lon page color w) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" color)
+                                                      (beatlookup (note-beat (first lon)) page)
+                                                      (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w)))
 (define (makescene lon page w)
   (cond
     [(empty? lon) 
@@ -228,32 +220,18 @@ reset)
                                                                                                                                                    (place-image tempominusbutton (posn-x temposelpos) (+ 36 (posn-y temposelpos))
                                                                                                                                        (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
                                                                                                                                   background))))))))))))))]                
-    [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) 
-                        (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red") (beatlookup (note-beat (first lon)) page)
-                                     (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w))]
-                       [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "blue")
-                                                                                                                    (beatlookup (note-beat (first lon)) page) (pitchlookup (note-pitch (first lon))) 
-                                                                                                                    (makescene (rest lon) page w))]
-                       [(and (string=? "temp2" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "green")
-                                                                                                                     (beatlookup (note-beat (first lon)) page) (pitchlookup (note-pitch (first lon)))
-                                                                                                                     (makescene (rest lon) page w))]
-                       [(and (string=? "temp3" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "purple")
-                                                                                                                     (beatlookup (note-beat (first lon)) page) (pitchlookup (note-pitch (first lon)))
-                                                                                                                     (makescene (rest lon) page w))]
-                       [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "orange")
-                                                                                                                     (beatlookup (note-beat (first lon)) page) (pitchlookup (note-pitch (first lon)))
-                                                                                                                     (makescene (rest lon) page w))]
-                       [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "yellow")
-                                                                                                                     (beatlookup (note-beat (first lon)) page) (pitchlookup (note-pitch (first lon)))
-                                                                                                                     (makescene (rest lon) page w))]
+    [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
+                       [(and (string=? "temp" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
+                       [(and (string=? "temp2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
+                       [(and (string=? "temp3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
+                       [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
+                       [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                        [else (makescene (rest lon) page w)])]))
 
-; list number -> boolean
-; checks if notes exist for a certain page
-(define (notes-exist? lon page)
-  (cond 
-    [(empty? lon) #f]
-    [(cons? lon) (or (< (* page 1 ) (note-beat (first lon)) (* page 8)) (notes-exist? (rest lon) page))]))
+(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))
+              (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red")
+                           (beatlookup (note-beat (first (list (note "piano" 71 2) (note "piano" 72 1)))) 1)
+                           (pitchlookup (note-pitch (first (list (note "piano" 71 2) (note "piano" 72 1))))) (makescene (rest (list (note "piano" 71 2) (note "piano" 72 1))) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))))
 
 ; the row of rectangles
 (define (rendercols) 
@@ -285,7 +263,6 @@ reset)
                  (button)
                  (button))))
 
-
 ; number -> number (posn-y)
 ; looks at the pitch of the note and determines the row in which the note should go 
 (define (pitchlookup pitch)
@@ -304,7 +281,6 @@ reset)
 
 ; number number -> number (posn-x)
 ; looks at the beat of the note and determines the column in which the note should go
-
 (define (beatlookup beat page)
   (cond
     [(= (- beat (* (- page 1) BEATS_PER_PAGE)) 1) (- (+ START_OF_STAFF (* BEAT_WIDTH 1)) (round (/ BEAT_WIDTH 2)))]
@@ -327,39 +303,30 @@ reset)
 ; note number -> boolean
 ; checks if a note is on that page
 (define (noteonpage? note page)
-  (= (ceiling (/ (note-beat note) BEATS_PER_PAGE)) page ))
-
+  (= (ceiling (/ (note-beat note) BEATS_PER_PAGE)) page))
 
 ; Mouse Event Handler
 ; World X Y Event -> World
-
-; Returns true if mouse is within r pixels from the point
-; Number Number Number Number Number -> Boolean
-(define (mousewithin mouse-x mouse-y point-x point-y xr yr)
-  (or (< (abs (- mouse-x point-x)) xr)
-      (< (abs (- mouse-y point-y)) yr)))
-
-(define (mousewithin-1dir mouse-xory point-xory r)
-  (< (abs (- mouse-xory point-xory)) r))
-
-
 ;;These functions find the row or column that the mouse is in
 ; number -> number (row)
 ; checks which row the mouse coordinates are in
 (define (mouserow y)
   (ceiling (/ (- y TOP_OF_STAFF) INTERVAL_HEIGHT)))
 
+(check-expect (mouserow 200) 2)
+              
 ; number number -> number (column)
 ; check which column the mouse coordinates are in
 (define (mousecol x page)
   (+ (* (- page 1) BEATS_PER_PAGE) (ceiling (/ (- x START_OF_STAFF) BEAT_WIDTH))))
 
+(check-expect (mousecol 300 1) 5)
 
 ; number number string number number -> note (structure)
-; Decides what to set the fields as in each new note added to the worldlist
+; decides what to set the fields as in each new note added to the worldlist
 (define (new-note col row selected curbeat page)
   (make-note selected (findpitch row) col))
-
+ 
 ; number -> number (pitch)
 ; each row represent a pitch, like row 8 represent pitch 60
 (define (findpitch row)
@@ -393,6 +360,11 @@ reset)
        (> y (posn-y buttonrowpos))
        (< y (+ (posn-y buttonrowpos) soundbuttonside))))
 
+; helper function
+; number image number number posn-x posn-y -> boolean
+; n is the distance away from the original button position
+; round-back is used to reverse floor function
+; check if the mouse coordinates are on a button specified
 (define (posn-check buttonpos button n round-back x y)
   (and (> y (- (+ (posn-y buttonpos) n) (- (floor (/ (image-height button) 2)) round-back)))
        (< y (+ (+ (posn-y buttonpos) n) (- (floor (/ (image-height button) 2)) round-back)))
@@ -482,6 +454,7 @@ reset)
         [(soundbutton-check x y 6) (given-sound w "temp5")]
         [(soundbutton-check x y 7) (given-sound w "erase")]))
 
+;(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1)
 
 ;(define-struct world (worldlist tempo curbeat modestate selected page))
 
