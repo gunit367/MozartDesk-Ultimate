@@ -16,11 +16,11 @@
 ; -the currently selected icon to place on the grid
 ; -the current page
 ; (make-world (list frames number string string number)
-(define-struct world (worldlist tempo curbeat modestate selected page) #:transparent)
+(define-struct world (worldlist tempo curbeat modestate selected page randval) #:transparent)
 
 ; initial state of the world for the program
 (define default_list empty)
-(define INITIAL_WORLD (make-world default_list 2 0 "start" "piano" 1))
+(define INITIAL_WORLD (make-world default_list 2 0 "start" "piano" 1 (random)))
 
 
 ; a note is a structure that includes
@@ -266,7 +266,7 @@
         [(string=? (world-modestate w) "start") startscreen]
         [else (empty-scene 100 100)]))
 
-(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1)) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1)))
+;(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 (rand))) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1)))
 
 ; string -> image
 ; checks if the playstate is in "playing" mode, if it is, then play button becomes pause button
@@ -293,7 +293,7 @@
     
 (define (makescene lon page w)
   (cond
-<<<<<<< HEAD
+
     [(empty? lon) 
      (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
                         "left" "middle"
@@ -319,18 +319,11 @@
                                                                                                                                                                                                              (place-image beatselect (posn-x beatselectpos) (posn-y beatselectpos)
                                                                                                                                                                                                                           (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
                                                                                                                                                                                                                                        (place-image mozart (posn-x mozartpos) (posn-y mozartpos)
-                                                                                                                                                                                                                                            (place-image (detmozartquote (random)) 650 680        
-                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                       background))))))))))))))))))]
-=======
-    [(empty? lon) (place-image (detplaystate (world-modestate w))
-                               (posn-x playbuttonpos) (posn-y playbuttonpos)
-                               (place-image (text/font (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "white" "Segoe UI" 'roman 'normal 'normal #f) (posn-x tempoboxpos)
-                                            (posn-y tempoboxpos)
-                                            (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
-                                                               (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
-                                                                            playconstants))))]
->>>>>>> origin/master
+                                                                                                                                                                                                                                            (place-image (detmozartquote (world-randval w)) 650 680        
+                                                                                                                                                                                                                                              (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
+                                                                            
+                                                                                                                                                                                                                                       playconstants)))))))))))))))))))]
+
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
                        
@@ -340,7 +333,7 @@
                        [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                        [else (makescene (rest lon) page w)])]))
 
-(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))
+#;(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))
               (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red")
                            (beatlookup (note-beat (first (list (note "piano" 71 2) (note "piano" 72 1)))) 1)
                            (pitchlookup (note-pitch (first (list (note "piano" 71 2) (note "piano" 72 1))))) (makescene (rest (list (note "piano" 71 2) (note "piano" 72 1))) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))))
@@ -553,12 +546,12 @@
 ; world string -> world
 ; sound-type represents type of sound like piano
 (define (given-sound w sound-type)
-  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) sound-type (world-page w)))
+  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) sound-type (world-page w) (world-randval w)))
 
 ; helper function
 ; world string -> world
 (define (given-beat w beat)
-  (make-world (world-worldlist w) (world-tempo w) beat (world-modestate w) (world-selected w) (world-page w)))
+  (make-world (world-worldlist w) (world-tempo w) beat (world-modestate w) (world-selected w) (world-page w) (world-randval w)))
 
 ; world posn-x posn-y -> world
 ; checks if the mouse coordinates are on a specific sound button and if it is, then creates a world with that specific sound that can be added to the staff
@@ -597,7 +590,7 @@
         [(or (string=? (world-modestate w) "playing")
              (string=? (world-modestate w) "paused")) (mainmousefn w x y evt)]
         [(and (string=? evt "button-down") (string=? (world-modestate w) "start"))
-         (make-world empty 2 0 "paused" "piano" 1)]
+         (make-world empty 2 0 "paused" "piano" 1 (world-randval w))]
         [else w]))
 
 ; world x y event -> world
@@ -607,25 +600,25 @@
 ; by pressing the play button, the program will play the rsound depending on which blocks are currently red solid
 (define (mainmousefn w x y evt)
   (cond [(and (string=? evt "button-down") (mouseonstaff? x y)) (buttondownhandler w x y)] ;(buttondownhandler w x y)]
-        [(and (string=? evt "button-down") (mouseonreset? x y)) (make-world default_list 2 0 "paused" "piano" 1) ]
+        [(and (string=? evt "button-down") (mouseonreset? x y)) (make-world default_list 2 0 "paused" "piano" 1 (random)) ]
         [(and (string=? evt "button-down") (mouseonplay? x y)) (play-pressed w)]
         [(and (string=? evt "button-down") (mouseonleftpage? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
                                                                                (world-modestate w) (world-selected w)
-                                                                               (change-page (world-page w) "back"))]
+                                                                               (change-page (world-page w) "back") (random))]
         [(and (string=? evt "button-down") (mouseonrightpage? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
                                                                                 (world-modestate w) (world-selected w)
-                                                                                (change-page (world-page w) "forward"))]
+                                                                                (change-page (world-page w) "forward") (random))]
         [(and (string=? evt "button-down") (mouseonbuttons? x y)) (buttonrowfunc w x y)]
         [(and (string=? evt "button-down") (mouseonoptions? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
-                                                                              "options" (world-selected w) (world-page w))]
+                                                                              "options" (world-selected w) (world-page w) (random))]
         [(and (string=? evt "button-down") (mouseontempoplus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "+") (world-curbeat w)
-                                                                                (world-modestate w) (world-selected w) (world-page w))]
+                                                                                (world-modestate w) (world-selected w) (world-page w) (random))]
         [(and (string=? evt "button-down") (mouseontempominus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "-") (world-curbeat w)
-                                                                                 (world-modestate w) (world-selected w) (world-page w))]
+                                                                                 (world-modestate w) (world-selected w) (world-page w) (random))]
         [(and (string=? evt "button-down") (mouseonbeatsel? x y)) (beatselfn w x y)]
         [(and (string=? evt "button-down") (string=? (world-modestate w) "start")) 
          (both (play startsound) 
-               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "paused" (world-selected w) (world-page w)))]
+               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "paused" (world-selected w) (world-page w) (random)))]
         [else w]))
 
 ; world posn-x posn-y mouse-event -> world
@@ -637,8 +630,8 @@
   (cond [(and (string=? evt "button-down") (mouseonsave? x y)) (both (savefile w) w)]
         [(and (string=? evt "button-down") (mouseonload? x y)) (loadfile w)]
         [(and (string=? evt "button-down") (mouseonresume? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
-                                                                             "paused" (world-selected w) (world-page w))]
-        [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w)))]
+                                                                             "paused" (world-selected w) (world-page w) (random))]
+        [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w) (random)))]
         [else w]))
 
 ; number string -> number
@@ -669,7 +662,7 @@
     [(and (note-exists? x y (mousecol x (world-page w)) (world-worldlist w) (world-page w))
           (string=? (world-selected w) "erase")) (delete-note x y (world-page w) (world-worldlist w))]
     [else (make-world (cons (new-note (mousecol x (world-page w)) (mouserow y) (world-selected w) (world-curbeat w) (world-page w)) (world-worldlist w))
-                      (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w))]))
+                      (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w) (random))]))
 
 ; number number number list number - > boolean
 ; checks if there is a note at posn-x and posn-y?
@@ -715,9 +708,9 @@
 (define (tick w)
   (cond [(string=? (world-modestate w) "playing")
          (if (song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
-                                        "paused" (world-selected w) (world-page w))
+                                        "paused" (world-selected w) (world-page w) (world-randval w))
              (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
-                         (world-modestate w) (world-selected w) (world-page w)))]
+                         (world-modestate w) (world-selected w) (world-page w) (world-randval w)))]
         [(string=? (world-modestate w) "paused") w]
         [else w]))
 
@@ -773,9 +766,9 @@
 
 (define (play-pressed w)(cond
                           [(string=? "paused" (world-modestate w))(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
-                                                                        (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "playing" (world-selected w) (world-page w)))]
+                                                                        (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "playing" (world-selected w) (world-page w) (world-randval w)))]
                           [(string=? "playing" (world-modestate w))(both (stop)  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
-                                                                                             "paused" (world-selected w) (world-page w)))]))
+                                                                                             "paused" (world-selected w) (world-page w) (world-randval w)))]))
 
 
 (big-bang INITIAL_WORLD 
