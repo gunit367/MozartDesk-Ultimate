@@ -1,5 +1,1 @@
-<<<<<<< Updated upstream
-#(struct:world (#(struct:note "piano" 71 2) #(struct:note "piano" 72 1)) 2 0 "paused" "vgame1" 1)
-=======
-#(struct:world () 2 0 "options" "piano" 1)
->>>>>>> Stashed changes
+#(struct:world (#(struct:note "piano" 72 16) #(struct:note "piano" 71 15) #(struct:note "piano" 69 14) #(struct:note "piano" 67 13) #(struct:note "piano" 65 12) #(struct:note "piano" 64 11) #(struct:note "piano" 62 10) #(struct:note "piano" 60 9) #(struct:note "piano" 60 8) #(struct:note "piano" 62 7) #(struct:note "piano" 64 6) #(struct:note "piano" 65 5) #(struct:note "piano" 67 4) #(struct:note "piano" 69 3) #(struct:note "piano" 71 2) #(struct:note "piano" 72 1)) 2 0 "options" "piano" 1)
