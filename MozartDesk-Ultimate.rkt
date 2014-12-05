@@ -192,13 +192,10 @@
 
 
 ; positions of all buttons
-<<<<<<< HEAD
+
 (define resetbuttonpos (make-posn 575 75))
-(define leftarrowpos (make-posn 675 75))
-=======
-(define resetbuttonpos (make-posn 800 690))
 (define leftarrowpos (make-posn 675 65))
->>>>>>> 3fd524068b050bcca5682b652206aee99462bbf7
+
 (define rightarrowpos (make-posn (+ (posn-x leftarrowpos)
                                     (image-width arrowleft))
                                  (posn-y leftarrowpos)))
@@ -298,7 +295,6 @@
     
 (define (makescene lon page w)
   (cond
-<<<<<<< HEAD
 
     [(empty? lon) 
      (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
@@ -330,17 +326,6 @@
                                                                             
                                                                                                                                                                                                                                        playconstants)))))))))))))))))))]
 
-=======
-    [(empty? lon) (place-image (detplaystate (world-modestate w))
-                               (posn-x playbuttonpos) (posn-y playbuttonpos)
-                               (place-image (text/font (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "white" "Segoe UI" 'roman 'normal 'normal #f) (posn-x tempoboxpos)
-                                            (posn-y tempoboxpos)
-                                            (place-image/align (text/font (string-append "Page:" (number->string (world-page w))) 24 "white" "Segoe UI" 'roman 'normal 'normal #f)
-                                                               (/ (+ (posn-x leftarrowpos) (posn-x rightarrowpos)) 2)
-                                                               (+ (posn-y leftarrowpos) (/ (image-height arrowleft) 2)) "middle" "top"
-                                                               (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
-                                                                            playconstants))))]
->>>>>>> 3fd524068b050bcca5682b652206aee99462bbf7
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
                        
@@ -729,17 +714,10 @@
 ; -pause the rsound if the modestate is "paused"
 (define (tick w)
   (cond [(string=? (world-modestate w) "playing")
-<<<<<<< HEAD
-         (if (song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
-                                        "paused" (world-selected w) (world-page w) (world-randval w))
-             (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
-                         (world-modestate w) (world-selected w) (world-page w) (world-randval w)))]
-=======
          (cond [(song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
-                                        "paused" (world-selected w) (world-page w))]
+                                        "paused" (world-selected w) (world-page w) (world-randval w))]
              [else (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
-                         (world-modestate w) (world-selected w) (pagecheck (world-curbeat w)))])]
->>>>>>> 3fd524068b050bcca5682b652206aee99462bbf7
+                         (world-modestate w) (world-selected w) (pagecheck (world-curbeat w)) (world-randval w))])]
         [(string=? (world-modestate w) "paused") w]
         [else w]))
 
