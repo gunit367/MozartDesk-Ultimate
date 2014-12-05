@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 ("6.1" ("23389baaf1cc34381c82730c5875aca82cbe54fb" . "754518e32f5eea74794054dc78ede2839d8bc42e") (collects #"rackunit" #"main.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"match" #"parse.rkt") (collects #"racket" #"match" #"gen-match.rkt") (collects #"syntax" #"parse" #"private" #"runtime-report.rkt"))
+=======
+("6.1" ("23389baaf1cc34381c82730c5875aca82cbe54fb" . "754518e32f5eea74794054dc78ede2839d8bc42e") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"rackunit" #"main.rkt") (collects #"racket" #"match" #"parse.rkt") (collects #"racket" #"match" #"gen-match.rkt") (collects #"syntax" #"parse" #"private" #"runtime-report.rkt"))
+>>>>>>> origin/master
