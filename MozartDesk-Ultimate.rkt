@@ -591,14 +591,18 @@ reset)
   (cond [(empty? lon) (silence 1)]
         [else (assemble (make-notes+times lon tempo))]))
 
+;checks to see if song has finished playing
+(define (song-over? w)(> (current-frame w) (song-length w)))
 ; world -> world
 ; checks the modestate and either
 ; -play the rsound if the modestate is "playing"
 ; -pause the rsound if the modestate is "paused"
 (define (tick w)
   (cond [(string=? (world-modestate w) "playing")
+         (if (song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
+                     "paused" (world-selected w) (world-page w))
          (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/28 (world-tempo w)))
-                     (world-modestate w) (world-selected w) (world-page w))]
+                     (world-modestate w) (world-selected w) (world-page w)))]
         [(string=? (world-modestate w) "paused") w]
         [else w]))
 
@@ -641,7 +645,7 @@ reset)
 ;(check-expect (song-length test-world) 22050)
 
 ;;converts world-curbeat to the current frame
-(define (current-frame w)(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w)))))
+(define (current-frame w)(round(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w))))))
 
 (define (playbuttonstate pbs)
   (if (string=? pbs "playing") "paused" "playing"))
@@ -650,9 +654,17 @@ reset)
   
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
+<<<<<<< HEAD
 (define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
                               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (playbuttonstate (world-modestate w)) 
                                           (world-selected w) (world-page w))))
+=======
+(define (play-pressed w)(cond
+                          [(string=? "paused" (world-modestate w))(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
+                              (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "playing" (world-selected w) (world-page w)))]
+                          [(string=? "playing" (world-modestate w))(both (stop)  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
+                                                                        "paused" (world-selected w) (world-page w)))]))
+>>>>>>> origin/master
 
 
 (big-bang INITIAL_WORLD 
