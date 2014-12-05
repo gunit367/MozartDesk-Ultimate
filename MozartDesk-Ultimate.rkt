@@ -50,8 +50,40 @@
 (define optionsbutton (bitmap/file "Images/optionsbutton.png"))
 (define pausebutton (bitmap/file "Images/pausebutton.png"))
 (define shutdownbackground (bitmap/file "Images/shutdownbackground.jpg"))
+(define (button) (rectangle BEAT_WIDTH INTERVAL_HEIGHT "outline" "white"))
 
 
+
+; the column of rectangles
+(define (colrender) 
+  (beside (above (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button))
+          (above (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button)
+                 (button))))
+
+
+; the row of rectangles
+(define (rendercols) 
+  (beside (colrender)
+          (colrender)
+          (colrender)
+          (colrender)
+          (colrender)
+          (colrender)
+          (colrender)
+          (colrender)))
 
 ; Basic world dimensions
 (define WORLD_HEIGHT (image-height background))
@@ -90,7 +122,6 @@
   (text/font "Tempo" 24 "white" "Segoe UI" 'roman 'normal 'normal #f))
 
 ; the initial rectangle design, represent empty note (no sound will be played for that rectangle when play button is clicked)
-(define (button) (rectangle BEAT_WIDTH INTERVAL_HEIGHT "outline" "white"))
 
 ; size of buttons
 (define soundbuttonside 30)
@@ -188,6 +219,25 @@
   (place-image shutdownbackground 512 512 (empty-scene (image-width shutdownbackground) (image-height shutdownbackground))))
 
 
+
+(define playconstants
+  (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
+                     "left" "middle"
+                     (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
+                                  (place-image arrowright (posn-x rightarrowpos) (posn-y rightarrowpos)
+                                               (place-image arrowleft (posn-x leftarrowpos) (posn-y rightarrowpos)
+                                                            (place-image optionsbutton (posn-x optionsbuttonpos) 
+                                                                         (posn-y optionsbuttonpos)
+                                                                         (place-image/align buttonrow (posn-x buttonrowpos) 
+                                                                                            (posn-y buttonrowpos) "left" "top"
+                                                                                            (place-image tempoboxlabel (- (posn-x tempoboxpos) 70) (posn-y tempoboxpos)
+                                                                                                         (place-image tempobox (posn-x tempoboxpos) (posn-y tempoboxpos)
+                                                                                                                      (place-image tempoplusbutton (posn-x temposelpos) (- (posn-y temposelpos) 36)
+                                                                                                                                   (place-image tempominusbutton (posn-x temposelpos) (+ 36 (posn-y temposelpos))
+                                                                                                                                                (place-image beatselect (posn-x beatselectpos) (posn-y beatselectpos)
+                                                                                                                                                             background))))))))))))
+
+
 ; world -> world
 ; Draws world from structure given by big bang
 ; Draws the sound grid, the play button, reset button, page buttons, and the texts
@@ -216,34 +266,16 @@
                                                         (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w)))
 (define (makescene lon page w)
   (cond
-    [(empty? lon) 
-     (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
-                        "left" "middle"
-                        (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
-                                     (place-image (text/font (string-append "Page " (number->string page)) 24 "White" "Segoe UI" 'roman 'normal 'normal #f) 
-                                                  (/ (+ (posn-x rightarrowpos) (posn-x leftarrowpos)) 2) 
-                                                  (- (posn-y rightarrowpos) (image-height arrowright))   
-                                                  (place-image arrowright (posn-x rightarrowpos) (posn-y rightarrowpos)
-                                                               (place-image arrowleft (posn-x leftarrowpos) (posn-y rightarrowpos) 
-                                                                            (place-image (detplaystate (world-modestate w))
-                                                                                         (posn-x playbuttonpos) (posn-y playbuttonpos)
-                                                                                         (place-image optionsbutton (posn-x optionsbuttonpos) 
-                                                                                                      (posn-y optionsbuttonpos)
-                                                                                                      (place-image/align buttonrow (posn-x buttonrowpos) 
-                                                                                                                         (posn-y buttonrowpos) "left" "top"
-                                                                                                                         (place-image tempoboxlabel (- (posn-x tempoboxpos) 70) (posn-y tempoboxpos)
-                                                                                                                                      (place-image tempobox (posn-x tempoboxpos) (posn-y tempoboxpos)
-                                                                                                                                                   (place-image (text/font (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "white" "Segoe UI" 'roman 'normal 'normal #f) (posn-x tempoboxpos)
-                                                                                                                                                                (posn-y tempoboxpos)
-                                                                                                                                                                (place-image tempoplusbutton (posn-x temposelpos) (- (posn-y temposelpos) 36)
-                                                                                                                                                                             (place-image tempominusbutton (posn-x temposelpos) (+ 36 (posn-y temposelpos))
-                                                                                                                                                                                          (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
-                                                                                                                                                                                                             (place-image beatselect (posn-x beatselectpos) (posn-y beatselectpos)
-                                                                                                                                                                                                                          (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
-                                                                                                                                                                                                                                       background))))))))))))))))]
+    [(empty? lon) (place-image (detplaystate (world-modestate w))
+                               (posn-x playbuttonpos) (posn-y playbuttonpos)
+                               (place-image (text/font (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "white" "Segoe UI" 'roman 'normal 'normal #f) (posn-x tempoboxpos)
+                                            (posn-y tempoboxpos)
+                                            (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
+                                                               (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
+                                                                            playconstants))))]
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
-
+                       
                        [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
                        [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
                        [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
@@ -264,39 +296,13 @@
 ; position where the beat dot will go
 ; world -> posn-x
 (define (beatdotx w)
-  (+ (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
-     BEAT_WIDTH) (/ BEAT_WIDTH 2)))
+  (- (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
+        BEAT_WIDTH) (/ BEAT_WIDTH 2)))
 
 
-; the row of rectangles
-(define (rendercols) 
-  (beside (colrender)
-          (colrender)
-          (colrender)
-          (colrender)
-          (colrender)
-          (colrender)
-          (colrender)
-          (colrender)))
 
-; the column of rectangles
-(define (colrender) 
-  (beside (above (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button))
-          (above (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button)
-                 (button))))
+
+
 
 ; number -> number (posn-y)
 ; looks at the pitch of the note and determines the row in which the note should go 
@@ -342,7 +348,7 @@
 
 ;a similar function
 (define (beatonpage? beat page)
-  (= (floor (/ beat BEATS_PER_PAGE)) page))
+  (= (ceiling (/ beat BEATS_PER_PAGE)) page))
 
 ; Mouse Event Handler
 ; World X Y Event -> World
@@ -480,11 +486,22 @@
        (> y (posn-y buttonrowpos))
        (< y (+ (posn-y buttonrowpos) soundbuttonside))))
 
+
+(define (beatbutton-check x y num)
+  (and (> x (+ (- (posn-x beatselectpos) (/ (image-width beatselect) 2)) (* (- num 1) BEAT_WIDTH)))
+       (< x (+ (- (posn-x beatselectpos) (/ (image-width beatselect) 2)) (* num BEAT_WIDTH)))
+       (> y (- (posn-y beatselectpos) (/ (image-width beatselect) 2)))
+       (< y (+ (posn-y beatselectpos) (/ (image-width beatselect) 2)))))
 ; helper function
 ; world string -> world
 ; sound-type represents type of sound like piano
 (define (given-sound w sound-type)
   (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) sound-type (world-page w)))
+
+; helper function
+; world string -> world
+(define (given-beat w beat)
+  (make-world (world-worldlist w) (world-tempo w) beat (world-modestate w) (world-selected w) (world-page w)))
 
 ; world posn-x posn-y -> world
 ; checks if the mouse coordinates are on a specific sound button and if it is, then creates a world with that specific sound that can be added to the staff
@@ -497,8 +514,25 @@
         [(soundbutton-check x y 6) (given-sound w "temp5")]
         [(soundbutton-check x y 7) (given-sound w "erase")]))
 
-;(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1)
 
+
+(define (beatselfn w x y)
+  (cond [(beatbutton-check x y 1) (given-beat w 1)]
+        [(beatbutton-check x y 2) (given-beat w 2)]
+        [(beatbutton-check x y 3) (given-beat w 3)]
+        [(beatbutton-check x y 4) (given-beat w 4)]
+        [(beatbutton-check x y 5) (given-beat w 5)]
+        [(beatbutton-check x y 6) (given-beat w 6)]
+        [(beatbutton-check x y 7) (given-beat w 7)]
+        [(beatbutton-check x y 8) (given-beat w 8)]
+        [(beatbutton-check x y 9) (given-beat w 9)]
+        [(beatbutton-check x y 10) (given-beat w 10)]
+        [(beatbutton-check x y 11) (given-beat w 11)]
+        [(beatbutton-check x y 12) (given-beat w 12)]
+        [(beatbutton-check x y 13) (given-beat w 13)]
+        [(beatbutton-check x y 14) (given-beat w 14)]
+        [(beatbutton-check x y 15) (given-beat w 15)]
+        [(beatbutton-check x y 16) (given-beat w 16)]))
 ;(define-struct world (worldlist tempo curbeat modestate selected page))
 
 (define (mousefn w x y evt)
@@ -528,7 +562,7 @@
                                                                                 (world-modestate w) (world-selected w) (world-page w))]
         [(and (string=? evt "button-down") (mouseontempominus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "-") (world-curbeat w)
                                                                                  (world-modestate w) (world-selected w) (world-page w))]
-       ; [(and (string=? evt "button-down") (mouseonbeatsel? x y)
+        [(and (string=? evt "button-down") (mouseonbeatsel? x y)) (beatselfn w x y)]
         [else w]))
 
 ; world posn-x posn-y mouse-event -> world
@@ -592,7 +626,7 @@
 ; turn a note into a sound and a time to be used in the make-song function
 (define (make-note+time n tempo)(cond
                                   [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "vgame1") (list (synth-note "vgame" 1 (note-pitch n) (round (* (* 44100 (/ 1 tempo)) (note-beat n)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame1") (list (rs-scale .1 (synth-note "vgame" 1 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
                                   [(string=? (note-type n) "hihat") (list c-hi-hat-1 (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]))
 
 ; list-of-notes tempo -> list (list sound time)
@@ -619,7 +653,7 @@
   (cond [(string=? (world-modestate w) "playing")
          (if (song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
                                         "paused" (world-selected w) (world-page w))
-             (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/28 (world-tempo w)))
+             (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
                          (world-modestate w) (world-selected w) (world-page w)))]
         [(string=? (world-modestate w) "paused") w]
         [else w]))
