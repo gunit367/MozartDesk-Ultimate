@@ -235,8 +235,13 @@
                                                                                                                                                                                                                                        background))))))))))))))))]
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
+<<<<<<< Updated upstream
                        [(and (string=? "temp2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
                        [(and (string=? "temp3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
+=======
+                       [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
+                       [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
+>>>>>>> Stashed changes
                        [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
                        [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                        [else (makescene (rest lon) page w)])]))
@@ -478,7 +483,7 @@
 (define (buttonrowfunc w x y)
   (cond [(soundbutton-check x y 1) (given-sound w "piano")]
         [(soundbutton-check x y 2) (given-sound w "vgame1")]
-        [(soundbutton-check x y 3) (given-sound w "temp2")]
+        [(soundbutton-check x y 3) (given-sound w "hihat")]
         [(soundbutton-check x y 4) (given-sound w "temp3")]
         [(soundbutton-check x y 5) (given-sound w "temp4")]
         [(soundbutton-check x y 6) (given-sound w "temp5")]
@@ -598,7 +603,8 @@
 ; turn a note into a sound and a time to be used in the make-song function
 (define (make-note+time n tempo)(cond
                                   [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "vgame1") (list (synth-note "vgame" 1 (note-pitch n) (round (* (* 44100 (/ 1 tempo)) (note-beat n)))))]))
+                                  [(string=? (note-type n) "vgame1") (list (synth-note "vgame" 1 (note-pitch n) (round (* (* 44100 (/ 1 tempo)) (note-beat n)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "hihat") (list c-hi-hat-1 (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]))
 
 ; list-of-notes tempo -> list (list sound time)
 ; turns a list of notes into a list of list of sounds and times for the assemble function
@@ -669,12 +675,16 @@
 
 ;;converts world-curbeat to the current frame
 (define (current-frame w)(round(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w))))))
+<<<<<<< Updated upstream
 
 (define (playbuttonstate pbs)
   (if (string=? pbs "playing") "paused" "playing"))
 
 
 
+=======
+  
+>>>>>>> Stashed changes
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
 
