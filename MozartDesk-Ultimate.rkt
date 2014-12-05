@@ -185,7 +185,7 @@
 
 ; positions of all buttons
 (define resetbuttonpos (make-posn 800 690))
-(define leftarrowpos (make-posn 675 75))
+(define leftarrowpos (make-posn 675 65))
 (define rightarrowpos (make-posn (+ (posn-x leftarrowpos)
                                     (image-width arrowleft))
                                  (posn-y leftarrowpos)))
@@ -277,7 +277,9 @@
                                (posn-x playbuttonpos) (posn-y playbuttonpos)
                                (place-image (text/font (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "white" "Segoe UI" 'roman 'normal 'normal #f) (posn-x tempoboxpos)
                                             (posn-y tempoboxpos)
-                                            (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
+                                            (place-image/align (text/font (string-append "Page:" (number->string (world-page w))) 24 "white" "Segoe UI" 'roman 'normal 'normal #f)
+                                                               (/ (+ (posn-x leftarrowpos) (posn-x rightarrowpos)) 2)
+                                                               (+ (posn-y leftarrowpos) (/ (image-height arrowleft) 2)) "middle" "top"
                                                                (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
                                                                             playconstants))))]
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
@@ -657,16 +659,21 @@
 
 ;checks to see if song has finished playing
 (define (song-over? w)(> (current-frame w) (song-length w)))
+
+
+; check to see if current playing beat is on page
+(define (pagecheck beat)
+  (ceiling (/ beat BEATS_PER_PAGE)))
 ; world -> world
 ; checks the modestate and either
 ; -play the rsound if the modestate is "playing"
 ; -pause the rsound if the modestate is "paused"
 (define (tick w)
   (cond [(string=? (world-modestate w) "playing")
-         (if (song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
-                                        "paused" (world-selected w) (world-page w))
-             (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
-                         (world-modestate w) (world-selected w) (world-page w)))]
+         (cond [(song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
+                                        "paused" (world-selected w) (world-page w))]
+             [else (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
+                         (world-modestate w) (world-selected w) (pagecheck (world-curbeat w)))])]
         [(string=? (world-modestate w) "paused") w]
         [else w]))
 
