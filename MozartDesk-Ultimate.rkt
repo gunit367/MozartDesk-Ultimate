@@ -96,7 +96,7 @@
 (define q5 (bitmap/file "Images/q5.jpg"))
 
 ;startup sound definition
-(define startsound (rs-read "intro.wav"))
+(define starts (rs-read "intro.wav"))
 
 
 ; Basic world dimensions
@@ -329,9 +329,9 @@
                            [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
                            
                            [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
-                           [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
-                           [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
-                           [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
+                           [(and (string=? "vgame2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
+                           [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
+                           [(and (string=? "vgame3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                            [else (makescene (rest lon) page w)])]))
 
 
@@ -629,7 +629,7 @@
                                                                                  (world-modestate w) (world-selected w) (world-page w) (random))]
         [(and (string=? evt "button-down") (mouseonbeatsel? x y)) (beatselfn w x y)]
         [(and (string=? evt "button-down") (string=? (world-modestate w) "start")) 
-         (both (play startsound) 
+         (both (play starts) 
                (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "paused" (world-selected w) (world-page w) (random)))]
         [else w]))
 
@@ -706,11 +706,11 @@
 ; turn a note into a sound and a time to be used in the make-song function
 (define (make-note+time n tempo)(cond
                                   [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "vgame1") (list (rs-scale .1 (synth-note "vgame" 1 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame1") (list (rs-scale .1 (synth-note "vgame" 1 (note-pitch n) (round (* 44100 (/ 1 tempo))))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
                                   [(string=? (note-type n) "hihat") (list c-hi-hat-1 (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "vgame2") (list (rs-scale .3 (synth-note "main" 63 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame2") (list (rs-scale .3 (synth-note "main" 63 (note-pitch n) (round (* 44100 (/ 1 tempo))))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
                                   [(string=? (note-type n) "kick") (list (rs-scale .7 kick) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "vgame3") (list (rs-scale .1 (synth-note "vgame" 22 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame3") (list (rs-scale .1 (synth-note "vgame" 22 (note-pitch n) (round (* 44100 (/ 1 tempo))))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
                  ))
 
 ; list-of-notes tempo -> list (list sound time)
@@ -742,7 +742,7 @@
   (cond [(string=? (world-modestate w) "playing")
          (cond [(song-over? w) (make-world (world-worldlist w) (world-tempo w) 0
                                            "paused" (world-selected w) (world-page w) (world-randval w))]
-               [else (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/20 (world-tempo w)))
+               [else (make-world (world-worldlist w) (world-tempo w) (+ (world-curbeat w) (* 1/12 (world-tempo w)))
                                  (world-modestate w) (world-selected w) (pagecheck (world-curbeat w)) (world-randval w))])]
         [(string=? (world-modestate w) "paused") w]
         [else w]))
