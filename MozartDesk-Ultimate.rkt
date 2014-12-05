@@ -147,13 +147,13 @@
                              soundbuttonbackground))
 (define tempbutton (overlay (text "V" soundbuttonside "black")
                             soundbuttonbackground))
-(define tempbutton2 (overlay (text "!!" soundbuttonside "black")
+(define tempbutton2 (overlay (text "H" soundbuttonside "black")
                              soundbuttonbackground))
-(define tempbutton3 (overlay (text "@" soundbuttonside "black")
+(define tempbutton3 (overlay (text "V" soundbuttonside "black")
                              soundbuttonbackground))
-(define tempbutton4 (overlay (text "$" soundbuttonside "black")
+(define tempbutton4 (overlay (text "K" soundbuttonside "black")
                              soundbuttonbackground))
-(define tempbutton5 (overlay (text "%" soundbuttonside "black")
+(define tempbutton5 (overlay (text "V" soundbuttonside "black")
                              soundbuttonbackground))
 (define erasebutton (overlay (text "E" soundbuttonside "black")
                              soundbuttonbackground))
@@ -295,45 +295,7 @@
 
 (define (makescene lon page w)
   (cond [(empty? lon) 
-<<<<<<< HEAD
-     (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
-                        "left" "middle"
-                        (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
-                                     (place-image (text/font (string-append "Page " (number->string page)) 24 "White" "Segoe UI" 'roman 'normal 'normal #f) 
-                                                  (/ (+ (posn-x rightarrowpos) (posn-x leftarrowpos)) 2) 
-                                                  25
-                                                  (place-image arrowright (posn-x rightarrowpos) (posn-y rightarrowpos)
-                                                               (place-image arrowleft (posn-x leftarrowpos) (posn-y rightarrowpos) 
-                                                                            (place-image (detplaystate (world-modestate w))
-                                                                                         (posn-x playbuttonpos) (posn-y playbuttonpos)
-                                                                                         (place-image optionsbutton (posn-x optionsbuttonpos) 
-                                                                                                      (posn-y optionsbuttonpos)
-                                                                                                      (place-image/align buttonrow (posn-x buttonrowpos) 
-                                                                                                                         (posn-y buttonrowpos) "left" "top"
-                                                                                                                         (place-image tempoboxlabel (- (posn-x tempoboxpos) 70) (posn-y tempoboxpos)
-                                                                                                                                      (place-image tempobox (posn-x tempoboxpos) (posn-y tempoboxpos)
-                                                                                                                                                   (place-image (text/font (substring (number->string (round (* 60 (world-tempo w)))) 0 3) 18 "white" "Segoe UI" 'roman 'normal 'normal #f) (posn-x tempoboxpos)
-                                                                                                                                                                (posn-y tempoboxpos)
-                                                                                                                                                                (place-image tempoplusbutton (posn-x temposelpos) (- (posn-y temposelpos) 36)
-                                                                                                                                                                             (place-image tempominusbutton (posn-x temposelpos) (+ 36 (posn-y temposelpos))
-                                                                                                                                                                                          (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
-                                                                                                                                                                                                             (place-image beatselect (posn-x beatselectpos) (posn-y beatselectpos)
-                                                                                                                                                                                                                          (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
-                                                                                                                                                                                                                                       (place-image mozart (posn-x mozartpos) (posn-y mozartpos)
-                                                                                                                                                                                                                                            (place-image (detmozartquote (world-randval w)) 650 680        
-                                                                                                                                                                                                                                              (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
-                                                                            
-                                                                                                                                                                                                                                       playconstants)))))))))))))))))))]
 
-    [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
-                       [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
-                       
-                       [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
-                       [(and (string=? "vgame2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
-                       [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
-                       [(and (string=? "vgame3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
-                       [else (makescene (rest lon) page w)])]))
-=======
          (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
                             "left" "middle"
                             (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
@@ -371,7 +333,7 @@
                            [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
                            [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                            [else (makescene (rest lon) page w)])]))
->>>>>>> origin/master
+
 
 (check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 random))
               (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red")
@@ -583,15 +545,18 @@
 (define (given-sound w sound-type)
   (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (world-modestate w) sound-type (world-page w) (world-randval w)))
 
+;helper function
+; world lon -> world
+(define (given-worldlist w lon)
+  (make-world lon (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w) (world-randval w)))
+
+
 ; helper function
 ; world string -> world
 (define (given-beat w beat)
   (make-world (world-worldlist w) (world-tempo w) beat (world-modestate w) (world-selected w) (world-page w) (world-randval w)))
 
-;helper function
-; world lon -> world
-(define (given-worldlist w lon)
-  (make-world lon (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w) (world-randval w)))
+
 
 ; world posn-x posn-y -> world
 ; checks if the mouse coordinates are on a specific sound button and if it is, then creates a world with that specific sound that can be added to the staff
@@ -727,10 +692,6 @@
 
 ; number number number list number - > boolean
 ; checks if there is a note at posn-x and posn-y?
-(define (note-exists? x y beat lon page)
-  (cond
-    [(empty? lon) #f]
-    [else (or (equal? (make-note (mousecol x page) (mouserow y) beat) (first lon)) (note-exists? x y beat (rest lon) page))]))
 
 ; world number number list -> lon
 ; deletes note from the worldlist
