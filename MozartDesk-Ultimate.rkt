@@ -268,7 +268,7 @@
         [(string=? (world-modestate w) "start") startscreen]
         [else (empty-scene 100 100)]))
 
-(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 random)) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1 random)))
+#;(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 random)) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1 random)))
 
 ; string -> image
 ; checks if the playstate is in "playing" mode, if it is, then play button becomes pause button
@@ -328,9 +328,9 @@
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
                        
                        [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
-                       [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
-                       [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
-                       [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
+                       [(and (string=? "vgame2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
+                       [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
+                       [(and (string=? "vgame3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                        [else (makescene (rest lon) page w)])]))
 
 (check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 random))
@@ -554,9 +554,9 @@
   (cond [(soundbutton-check x y 1) (given-sound w "piano")]
         [(soundbutton-check x y 2) (given-sound w "vgame1")]
         [(soundbutton-check x y 3) (given-sound w "hihat")]
-        [(soundbutton-check x y 4) (given-sound w "kick")]
-        [(soundbutton-check x y 5) (given-sound w "temp4")]
-        [(soundbutton-check x y 6) (given-sound w "temp5")]
+        [(soundbutton-check x y 4) (given-sound w "vgame2")]
+        [(soundbutton-check x y 5) (given-sound w "kick")]
+        [(soundbutton-check x y 6) (given-sound w "vgame3")]
         [(soundbutton-check x y 7) (given-sound w "erase")]))
 
 (check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 65 90)
@@ -700,7 +700,11 @@
 (define (make-note+time n tempo)(cond
                                   [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
                                   [(string=? (note-type n) "vgame1") (list (rs-scale .1 (synth-note "vgame" 1 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "hihat") (list c-hi-hat-1 (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]))
+                                  [(string=? (note-type n) "hihat") (list c-hi-hat-1 (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame2") (list (rs-scale .3 (synth-note "main" 63 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "kick") (list (rs-scale .7 kick) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                                  [(string=? (note-type n) "vgame3") (list (rs-scale .1 (synth-note "vgame" 22 (note-pitch n) (* 44100 (/ 1 tempo)))) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
+                 ))
 
 ; list-of-notes tempo -> list (list sound time)
 ; turns a list of notes into a list of list of sounds and times for the assemble function
