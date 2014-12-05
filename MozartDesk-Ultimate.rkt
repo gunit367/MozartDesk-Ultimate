@@ -654,17 +654,12 @@ reset)
   
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
-<<<<<<< HEAD
-(define (play-pressed w)(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
-                              (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) (playbuttonstate (world-modestate w)) 
-                                          (world-selected w) (world-page w))))
-=======
+
 (define (play-pressed w)(cond
                           [(string=? "paused" (world-modestate w))(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
                               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "playing" (world-selected w) (world-page w)))]
                           [(string=? "playing" (world-modestate w))(both (stop)  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
                                                                         "paused" (world-selected w) (world-page w)))]))
->>>>>>> origin/master
 
 
 (big-bang INITIAL_WORLD 
