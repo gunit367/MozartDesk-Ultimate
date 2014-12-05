@@ -52,6 +52,14 @@
 (define shutdownbackground (bitmap/file "Images/shutdownbackground.jpg"))
 (define startscreen (bitmap/file "Images/startscreen.png"))
 
+;Mozart Assistant images
+(define mozart (bitmap/file "Images/mozart.jpg"))
+(define q1 (bitmap/file "Images/q1.jpg"))
+(define q2 (bitmap/file "Images/q2.jpg"))
+(define q3 (bitmap/file "Images/q3.jpg"))
+(define q4 (bitmap/file "Images/q4.jpg"))
+(define q5 (bitmap/file "Images/q5.jpg"))
+
 ;startup sound definition
 (define startsound (rs-read "intro.wav"))
 
@@ -149,7 +157,7 @@
 
 
 ; positions of all buttons
-(define resetbuttonpos (make-posn 800 690))
+(define resetbuttonpos (make-posn 575 75))
 (define leftarrowpos (make-posn 675 75))
 (define rightarrowpos (make-posn (+ (posn-x leftarrowpos)
                                     (image-width arrowleft))
@@ -170,6 +178,8 @@
 (define temposelpos (make-posn 482 90))
 (define beatselectpos (make-posn (/ (+ START_OF_STAFF END_OF_STAFF) 2)
                                  (+ BOTTOM_OF_STAFF (image-height beatselect))))
+(define mozartpos (make-posn 980 730))
+
 
 
 
@@ -218,6 +228,16 @@
 (define (rectangle-color lon page color w) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" color)
                                                         (beatlookup (note-beat (first lon)) page)
                                                         (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w)))
+
+
+(define (detmozartquote quote)
+  (cond
+    [(< quote .2) q1]
+    [(< quote .4) q2]
+    [(< quote .6) q3]
+    [(< quote .8) q4]
+    [(< quote 1) q5]))
+    
 (define (makescene lon page w)
   (cond
     [(empty? lon) 
@@ -244,7 +264,10 @@
                                                                                                                                                                                           (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
                                                                                                                                                                                                              (place-image beatselect (posn-x beatselectpos) (posn-y beatselectpos)
                                                                                                                                                                                                                           (place-image (greendot? w) (beatdotx w) (posn-y beatselectpos)
-                                                                                                                                                                                                                                       background))))))))))))))))]
+                                                                                                                                                                                                                                       (place-image mozart (posn-x mozartpos) (posn-y mozartpos)
+                                                                                                                                                                                                                                            (place-image (detmozartquote (random)) 650 680        
+                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                       background))))))))))))))))))]
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
                        
