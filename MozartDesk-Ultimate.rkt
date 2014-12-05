@@ -268,7 +268,7 @@
         [(string=? (world-modestate w) "start") startscreen]
         [else (empty-scene 100 100)]))
 
-;(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 (rand))) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1)))
+(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 random)) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1 random)))
 
 ; string -> image
 ; checks if the playstate is in "playing" mode, if it is, then play button becomes pause button
@@ -294,9 +294,7 @@
     [(< quote 1) q5]))
     
 (define (makescene lon page w)
-  (cond
-
-    [(empty? lon) 
+  (cond [(empty? lon) 
      (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
                         "left" "middle"
                         (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
@@ -335,26 +333,21 @@
                        [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                        [else (makescene (rest lon) page w)])]))
 
-#;(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))
+(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 random))
               (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red")
                            (beatlookup (note-beat (first (list (note "piano" 71 2) (note "piano" 72 1)))) 1)
-                           (pitchlookup (note-pitch (first (list (note "piano" 71 2) (note "piano" 72 1))))) (makescene (rest (list (note "piano" 71 2) (note "piano" 72 1))) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))))
-
+                           (pitchlookup (note-pitch (first (list (note "piano" 71 2) (note "piano" 72 1))))) 
+                           (makescene (rest (list (note "piano" 71 2) (note "piano" 72 1))) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 random))))
 
 (define (greendot? w)
   (cond [(beatonpage? (world-curbeat w) (world-page w)) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green)]
         [else empty-image]))
-
 
 ; position where the beat dot will go
 ; world -> posn-x
 (define (beatdotx w)
   (- (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
         BEAT_WIDTH) (/ BEAT_WIDTH 2)))
-
-
-
-
 
 ; number -> number (posn-y)
 ; looks at the pitch of the note and determines the row in which the note should go 
@@ -527,7 +520,7 @@
 (define (mouseonbeatsel? x y)
   (posn-check beatselectpos beatselect 0 0 x y))
 
-(check-expect (posn-check resetbuttonpos resetbutton 0 0.5 800 700) true) ;coordinates within the reset button
+(check-expect (posn-check resetbuttonpos resetbutton 0 0.5 575 75) true) ;coordinates within the reset button
 
 ; helper function
 ; x y number -> boolean
@@ -561,11 +554,13 @@
   (cond [(soundbutton-check x y 1) (given-sound w "piano")]
         [(soundbutton-check x y 2) (given-sound w "vgame1")]
         [(soundbutton-check x y 3) (given-sound w "hihat")]
-        [(soundbutton-check x y 4) (given-sound w "temp3")]
+        [(soundbutton-check x y 4) (given-sound w "kick")]
         [(soundbutton-check x y 5) (given-sound w "temp4")]
         [(soundbutton-check x y 6) (given-sound w "temp5")]
         [(soundbutton-check x y 7) (given-sound w "erase")]))
 
+(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 65 90)
+              (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 random))
 
 
 (define (beatselfn w x y)
@@ -585,8 +580,10 @@
         [(beatbutton-check x y 14) (given-beat w 14)]
         [(beatbutton-check x y 15) (given-beat w 15)]
         [(beatbutton-check x y 16) (given-beat w 16)]))
-;(define-struct world (worldlist tempo curbeat modestate selected page))
 
+
+; world x y mouse-event
+; handles the mouse events for all the screens
 (define (mousefn w x y evt)
   (cond [(string=? (world-modestate w) "options") (optionsmousefn w x y evt)]
         [(or (string=? (world-modestate w) "playing")
@@ -595,7 +592,10 @@
          (make-world empty 2 0 "paused" "piano" 1 (world-randval w))]
         [else w]))
 
-; world x y event -> world
+(check-expect (mousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 100 100 "button-down")
+              (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 100 100 "button-down"))
+
+; world x y mouse-event -> world
 ; handles the mouse events on the main screen
 ; by pressing the block, the block will turn from outline to a colored solid block, depended on the current world-selected
 ; by pressing the reset button, the block will all turn back to outline
@@ -623,6 +623,8 @@
                (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "paused" (world-selected w) (world-page w) (random)))]
         [else w]))
 
+(check-expect (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 800 700 "button-down") INITIAL_WORLD)
+
 ; world posn-x posn-y mouse-event -> world
 ; handles the mouse events on the option menu
 ; by pressing the save function, the program will save the current world into a text file for it to be loaded later
@@ -636,6 +638,10 @@
         [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w) (random)))]
         [else w]))
 
+(check-expect (optionsmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 500 150 "button-down")
+              (both (savefile (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random))
+                    (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random)))
+
 ; number string -> number
 ; by pressing the increased tempo button, the tempo will increase by 3
 ; by pressing the decreased tempo button, the tempo will decrease by 3
@@ -645,6 +651,8 @@
     [(and (string=? type "-") (> tempo 0)) (- tempo .05)]
     [else tempo]))
 
+(check-within (change-tempo 120 "piano") 120.5 0.5)
+
 ; number string -> number
 ; changes the page of the composer
 ; this function ensures the page doesn't below the value of one
@@ -653,6 +661,10 @@
     [(and (string=? navtype "back") (= page 1)) 1]
     [(string=? navtype "forward") (add1 page)]
     [(string=? navtype "back") (sub1 page)]))
+
+(check-expect (change-page 1 "forward") 2)
+(check-expect (change-page 1 "back") 1)
+(check-expect (change-page 2 "back") 1)
 
 ; world number number -> world
 ; check if there is note for a rectangle and either
@@ -665,6 +677,9 @@
           (string=? (world-selected w) "erase")) (delete-note x y (world-page w) (world-worldlist w))]
     [else (make-world (cons (new-note (mousecol x (world-page w)) (mouserow y) (world-selected w) (world-curbeat w) (world-page w)) (world-worldlist w))
                       (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w) (random))]))
+
+(check-expect (buttondownhandler (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 random) 50 200)
+              (make-world (list (note "vgame1" 71 1) (note "piano" 71 2) (note "piano" 72 1))  2 0 "paused" "vgame1" 1 random))
 
 ; number number number list number - > boolean
 ; checks if there is a note at posn-x and posn-y?
