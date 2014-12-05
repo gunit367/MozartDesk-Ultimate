@@ -221,7 +221,7 @@
                                                                                                                                        (place-image/align (text/font "MozartDesk Ultimate" 36 "white" "Segoe UI" 'roman 'normal 'normal #f) 25 890 "left" "bottom"
                                                                                                                                   background))))))))))))))]                
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
-                       [(and (string=? "temp" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
+                       [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
                        [(and (string=? "temp2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
                        [(and (string=? "temp3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
                        [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
@@ -454,14 +454,18 @@
         [(soundbutton-check x y 6) (given-sound w "temp5")]
         [(soundbutton-check x y 7) (given-sound w "erase")]))
 
-;(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1)
+(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1) 65 90)
+              (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1))
 
-;(define-struct world (worldlist tempo curbeat modestate selected page))
-
+; world posn-x posn-y mouse-event -> world
+; a general on-mouse function that handles both on-mouse from the option menu and composer screen
 (define (mousefn w x y evt)
   (cond [(string=? (world-modestate w) "options") (optionsmousefn w x y evt)]
         [(or (string=? (world-modestate w) "playing")
              (string=? (world-modestate w) "paused")) (mainmousefn w x y evt)]))
+
+(check-expect (mousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1) 100 100 "button-down")
+              (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1) 100 100 "button-down"))
 
 ; world x y event -> world
 ; handles the mouse events on the main screen
@@ -487,6 +491,8 @@
                                                                                  (world-modestate w) (world-selected w) (world-page w))]
         [else w]))
 
+(check-expect (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1) 800 700 "button-down") INITIAL_WORLD)
+
 ; world posn-x posn-y mouse-event -> world
 ; handles the mouse events on the option menu
 ; by pressing the save function, the program will save the current world into a text file for it to be loaded later
@@ -500,6 +506,10 @@
         [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w)))]
         [else w]))
 
+(check-expect (optionsmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1) 500 150 "button-down")
+              (both (savefile (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1))
+                    (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1)))
+
 ; number string -> number
 ; by pressing the increased tempo button, the tempo will increase by 3
 ; by pressing the decreased tempo button, the tempo will decrease by 3
@@ -509,6 +519,8 @@
     [(and (string=? type "-") (> tempo 0)) (- tempo .05)]
     [else tempo]))
 
+(check-within (change-tempo 120 "piano") 120.5 0.5)
+
 ; number string -> number
 ; changes the page of the composer
 ; this function ensures the page doesn't below the value of one
@@ -517,6 +529,10 @@
     [(and (string=? navtype "back") (= page 1)) 1]
     [(string=? navtype "forward") (add1 page)]
     [(string=? navtype "back") (sub1 page)]))
+
+(check-expect (change-page 1 "forward") 2)
+(check-expect (change-page 1 "back") 1)
+(check-expect (change-page 2 "back") 1)
 
 ; world number number -> world
 ; check if there is note for a rectangle and either
@@ -529,6 +545,10 @@
           (string=? (world-selected w) "erase")) (delete-note x y (world-page w) (world-worldlist w))]
     [else (make-world (cons (new-note (mousecol x (world-page w)) (mouserow y) (world-selected w) (world-curbeat w) (world-page w)) (world-worldlist w))
                       (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w))]))
+
+(check-expect (buttondownhandler (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1) 50 200)
+              (make-world (list (note "vgame1" 71 1) (note "piano" 71 2) (note "piano" 72 1))
+                      2 0 "paused" "vgame1" 1))
 
 ; number number number list number - > boolean
 ; checks if there is a note at posn-x and posn-y?

@@ -1,0 +1,1 @@
+#(struct:world (#(struct:note "piano" 71 2) #(struct:note "piano" 72 1)) 2 0 "paused" "vgame1" 1)
