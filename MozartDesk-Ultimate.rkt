@@ -349,7 +349,7 @@
 ; position where the beat dot will go
 ; world -> posn-x
 (define (beatdotx w)
-  (+ (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
+  (- (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
         BEAT_WIDTH) (/ BEAT_WIDTH 2)))
 
 
@@ -737,9 +737,6 @@
 ; converts a string into a structure
 (define (string->structs w) 
   (string->struct/maker maker-table w))
-
-(check-expect (string->structs (write-to-string INITIAL_WORLD)) (world '() 2 0 "start" "piano" 1))
-(check-expect (write-to-string INITIAL_WORLD) "#(struct:world () 2 0 \"start\" \"piano\" 1)")
 
 ; test file of the saved world
 (define SAVED-FILE-NAME "saved-world.txt")
