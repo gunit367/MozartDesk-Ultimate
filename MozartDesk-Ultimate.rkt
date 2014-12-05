@@ -243,13 +243,9 @@
                                                                                                                                                                                                                                        background))))))))))))))))]
     [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
                        [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
-<<<<<<< Updated upstream
-                       [(and (string=? "temp2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
-                       [(and (string=? "temp3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
-=======
+
                        [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
                        [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
->>>>>>> Stashed changes
                        [(and (string=? "temp4" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
                        [(and (string=? "temp5" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                        [else (makescene (rest lon) page w)])]))
@@ -667,21 +663,14 @@
 ;(check-expect (song-length test-world) 22050)
 
 ;;converts world-curbeat to the current frame
-<<<<<<< HEAD
-(define (current-frame w)(round(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w))))))
-<<<<<<< Updated upstream
-=======
+
 (define (current-frame w) (round(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w))))))
->>>>>>> FETCH_HEAD
+
 
 (define (playbuttonstate pbs)
   (if (string=? pbs "playing") "paused" "playing"))
 
 
-
-=======
-  
->>>>>>> Stashed changes
 ;play-button function   world -> world, plays song
 ;this function is called in the mainmousefn function, when the play button is clicked.
 
