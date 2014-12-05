@@ -575,7 +575,7 @@ reset)
 ; turn a note into a sound and a time to be used in the make-song function
 (define (make-note+time n tempo)(cond
                                   [(string=? (note-type n) "piano") (list (piano-tone (note-pitch n)) (round (* (* 44100 (/ 1 tempo)) (note-beat n))))]
-                                  [(string=? (note-type n) "vgame1") (list (synth-note "vgame" 1 (note-pitch n) (round (* (* 44100 (/ 1 tempo)) (note-beat n)))))]
+                                  [(string=? (note-type n) "vgame1") (list (synth-note "vgame" 1 (note-pitch n) (round (* (* 44100 (/ 1 tempo)) (note-beat n)))))]))
 
 ; list-of-notes tempo -> list (list sound time)
 ; turns a list of notes into a list of list of sounds and times for the assemble function
