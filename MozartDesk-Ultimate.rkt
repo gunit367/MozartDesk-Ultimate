@@ -277,6 +277,21 @@
     [(< quote 8) q4]
     [(< quote 10) q5]))
 
+; greendot is an image
+; world -> image
+; if the current beat is on that page, then an image of current beat indicator will appear at the beat identifier row of that page
+(define (greendot? w)
+  (cond [(beatonpage? (world-curbeat w) (world-page w)) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green)]
+        [else empty-image]))
+(check-expect (greendot? test-world) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green))
+
+; world -> posn-x
+; depending on the current beat, the beat indicator's x position will move along the beat identifier row from left to right
+(define (beatdotx w)
+  (- (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
+        BEAT_WIDTH) (/ BEAT_WIDTH 2)))
+(check-expect (beatdotx test-world) 96)
+
 ; helper function for makescene function
 ; list-of-notes number string world -> image
 ; depending of which sound button (i.e "piano" and "vgame1") is currently used,
@@ -328,21 +343,6 @@
 
 (check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 test-world2)
               (rectangle-color (list (note "piano" 71 2) (note "piano" 72 1)) 1 "red" test-world2))
-
-; greendot is an image
-; world -> image
-; if the current beat is on that page, then an image of current beat indicator will appear at the beat identifier row of that page
-(define (greendot? w)
-  (cond [(beatonpage? (world-curbeat w) (world-page w)) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green)]
-        [else empty-image]))
-(check-expect (greendot? test-world) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green))
-
-; world -> posn-x
-; depending on the current beat, the beat indicator's x position will move along the beat identifier row from left to right
-(define (beatdotx w)
-  (- (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
-        BEAT_WIDTH) (/ BEAT_WIDTH 2)))
-(check-expect (beatdotx test-world) 96)
 
 ; number -> number(posn-y)
 ; looks at the pitch of the note and determines the row in which the note should go 
