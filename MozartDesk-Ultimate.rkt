@@ -20,8 +20,7 @@
 
 ; initial state of the world for the program
 (define default_list empty)
-(define INITIAL_WORLD (make-world default_list 2 0 "start" "piano" 1 (random 11)))
-
+(define INITIAL_WORLD (make-world default_list 2 0 "start" "piano" 1 (random 10)))
 
 ; a note is a structure that includes
 ; -the type of sound
@@ -30,9 +29,19 @@
 ; (make-note (string number number)
 (define-struct note (type pitch beat) #:transparent)
 
+; used for some test cases
+(define test-world (make-world (list (make-note "piano" 55 2)) 2 2 "paused" "piano" 1 1))
+(define test-world2 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 1))
+
 ; required function
 (define (both a b) b)
 (define-struct posn [x y])
+
+; s is a number
+; number -> number
+; s function takes in a second (time) and produces the frame of that second
+(define (s n)
+  (* 44100 n))
 
 ; option world image
 (define optionsbackground (bitmap/file "Images/optionsbackground.jpg"))
@@ -40,19 +49,27 @@
 (define loadbutton (bitmap/file "Images/loadbutton.png"))
 (define exitbutton (bitmap/file "Images/exitbutton.png"))
 (define resumebutton (bitmap/file "Images/resumebutton.png"))
-(define arrowleft (bitmap/file "Images/arrowl.png"))
-(define arrowright (bitmap/file "Images/arrowr.png"))
 
 ; composer world image
+(define arrowleft (bitmap/file "Images/arrowl.png"))
+(define arrowright (bitmap/file "Images/arrowr.png"))
+(define startscreen (bitmap/file "Images/startscreen.png"))
 (define background (bitmap/file "Images/background.jpg"))
 (define playbutton (bitmap/file "Images/playbutton.png"))
 (define resetbutton (bitmap/file "Images/resetbutton.png"))
 (define optionsbutton (bitmap/file "Images/optionsbutton.png"))
 (define pausebutton (bitmap/file "Images/pausebutton.png"))
 (define shutdownbackground (bitmap/file "Images/shutdownbackground.jpg"))
-(define (button) (rectangle BEAT_WIDTH INTERVAL_HEIGHT "outline" "white"))
+(define (button) (rectangle BEAT_WIDTH INTERVAL_HEIGHT "outline" "white")) ; the initial rectangle design, represent empty note 
+                                                                           ; (no sound will be played for that rectangle when play button is clicked)
 
-
+;Mozart Assistant images
+(define mozart (bitmap/file "Images/mozart.jpg"))
+(define q1 (bitmap/file "Images/q1.jpg"))
+(define q2 (bitmap/file "Images/q2.jpg"))
+(define q3 (bitmap/file "Images/q3.jpg"))
+(define q4 (bitmap/file "Images/q4.jpg"))
+(define q5 (bitmap/file "Images/q5.jpg"))
 
 ; the column of rectangles
 (define (colrender) 
@@ -85,19 +102,8 @@
           (colrender)
           (colrender)))
 
-(define startscreen (bitmap/file "Images/startscreen.png"))
-
-;Mozart Assistant images
-(define mozart (bitmap/file "Images/mozart.jpg"))
-(define q1 (bitmap/file "Images/q1.jpg"))
-(define q2 (bitmap/file "Images/q2.jpg"))
-(define q3 (bitmap/file "Images/q3.jpg"))
-(define q4 (bitmap/file "Images/q4.jpg"))
-(define q5 (bitmap/file "Images/q5.jpg"))
-
-;startup sound definition
+;startup rsound definition
 (define starts (rs-read "intro.wav"))
-
 
 ; Basic world dimensions
 (define WORLD_HEIGHT (image-height background))
@@ -114,8 +120,6 @@
 (define BOTTOM_OF_STAFF (+ TOP_OF_STAFF (* 8 INTERVAL_HEIGHT)))
 (define START_OF_STAFF 0) ; x coordinate of the far left side of the staff
 (define END_OF_STAFF (+ START_OF_STAFF (* BEATS_PER_PAGE BEAT_WIDTH)))
-
-
 
 ; tempo box and changer button images
 (define tempoplusbutton
@@ -134,8 +138,6 @@
   (square 35 "outline" "black"))
 (define tempoboxlabel
   (text/font "Tempo" 24 "white" "Segoe UI" 'roman 'normal 'normal #f))
-
-; the initial rectangle design, represent empty note (no sound will be played for that rectangle when play button is clicked)
 
 ; size of buttons
 (define soundbuttonside 30)
@@ -164,37 +166,29 @@
                           tempbutton4
                           tempbutton5
                           erasebutton))
-(define beatselect (beside (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)
-                           (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green)))
 
-
-; s is a number
-; number -> number
-; s function takes in a second (time) and produces the frame of that second
-(define (s n)
-  (* 44100 n))
-
-
-
+; a row of green rectangle that is used as the beat identifier
+(define beatbox (rectangle BEAT_WIDTH INTERVAL_HEIGHT 'outline 'green))
+(define beatselect (beside beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox
+                           beatbox))
 
 ; positions of all buttons
-
 (define resetbuttonpos (make-posn 575 75))
-(define leftarrowpos (make-posn 675 65))
+(define leftarrowpos (make-posn 675 75))
 
 (define rightarrowpos (make-posn (+ (posn-x leftarrowpos)
                                     (image-width arrowleft))
@@ -217,12 +211,7 @@
                                  (+ BOTTOM_OF_STAFF (image-height beatselect))))
 (define mozartpos (make-posn 980 730))
 
-
-
-
-
-
-; Options menu display, doesn't change at all with world state so it is a visual constant
+; Options menu display, a visual constant
 (define optionsmenu
   (place-image savebutton
                (posn-x savebuttonpos) (posn-y savebuttonpos)
@@ -233,11 +222,11 @@
                                          (place-image exitbutton
                                                       (posn-x exitbuttonpos) (posn-y exitbuttonpos)
                                                       optionsbackground)))))
+; shut down screen, a visual constant
 (define shutdowndialog
   (place-image shutdownbackground 512 512 (empty-scene (image-width shutdownbackground) (image-height shutdownbackground))))
 
-
-
+; visual constant in the composer screen
 (define playconstants
   (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
                      "left" "middle"
@@ -268,7 +257,7 @@
         [(string=? (world-modestate w) "start") startscreen]
         [else (empty-scene 100 100)]))
 
-#;(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 (random 11))) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1 (random 11))))
+(check-expect (renderfn (make-world default_list 2 0 "paused" "piano" 1 1)) (makescene default_list 1 (make-world default_list 2 0 "paused" "piano" 1 1)))
 
 ; string -> image
 ; checks if the playstate is in "playing" mode, if it is, then play button becomes pause button
@@ -278,13 +267,8 @@
 
 (check-expect (detplaystate "paused") playbutton)
 
-; list number world -> image
-; Creates a image depending on the worldlist's list of notes
-(define (rectangle-color lon page color w) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" color)
-                                                        (beatlookup (note-beat (first lon)) page)
-                                                        (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w)))
-
-
+; number -> image
+; Mozart randomly says a quote from the bottom right of the composer screen by using the random function
 (define (detmozartquote quote)
   (cond
     [(< quote 2) q1]
@@ -293,9 +277,18 @@
     [(< quote 8) q4]
     [(< quote 10) q5]))
 
+; helper function for makescene function
+; list-of-notes number string world -> image
+; depending of which sound button (i.e "piano" and "vgame1") is currently used,
+; the clicked rectangle will turn into a corresponding color for that sound
+(define (rectangle-color lon page color w) (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" color)
+                                                        (beatlookup (note-beat (first lon)) page)
+                                                        (pitchlookup (note-pitch (first lon))) (makescene (rest lon) page w)))
+
+; list-of-notes number world -> image
+; Creates a world image depending on the worldlist's list of notes
 (define (makescene lon page w)
   (cond [(empty? lon) 
-
          (place-image/align (rendercols) START_OF_STAFF MIDDLE_OF_STAFF_V
                             "left" "middle"
                             (place-image resetbutton (posn-x resetbuttonpos) (posn-y resetbuttonpos)
@@ -326,32 +319,32 @@
                                                                                                                                                                                                                                                                                   playconstants)))))))))))))))))))]
         
         [(cons? lon) (cond [(and (string=? "piano" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "red" w)]
-                           [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]
-                           
+                           [(and (string=? "vgame1" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "blue" w)]                           
                            [(and (string=? "hihat" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "green" w)]
                            [(and (string=? "vgame2" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "purple" w)]
                            [(and (string=? "kick" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "orange" w)]
                            [(and (string=? "vgame3" (note-type (first lon))) (noteonpage? (first lon) page)) (rectangle-color lon page "yellow" w)]
                            [else (makescene (rest lon) page w)])]))
 
+(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 test-world2)
+              (rectangle-color (list (note "piano" 71 2) (note "piano" 72 1)) 1 "red" test-world2))
 
-(check-expect (makescene (list (note "piano" 71 2) (note "piano" 72 1)) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 (random 11)))
-              (place-image (rectangle BEAT_WIDTH INTERVAL_HEIGHT "solid" "red")
-                           (beatlookup (note-beat (first (list (note "piano" 71 2) (note "piano" 72 1)))) 1)
-                           (pitchlookup (note-pitch (first (list (note "piano" 71 2) (note "piano" 72 1))))) 
-                           (makescene (rest (list (note "piano" 71 2) (note "piano" 72 1))) 1 (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 (random 11)))))
-
+; greendot is an image
+; world -> image
+; if the current beat is on that page, then an image of current beat indicator will appear at the beat identifier row of that page
 (define (greendot? w)
   (cond [(beatonpage? (world-curbeat w) (world-page w)) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green)]
         [else empty-image]))
+(check-expect (greendot? test-world) (circle (/ INTERVAL_HEIGHT 2) 'solid 'green))
 
-; position where the beat dot will go
 ; world -> posn-x
+; depending on the current beat, the beat indicator's x position will move along the beat identifier row from left to right
 (define (beatdotx w)
   (- (* (modulo (ceiling (world-curbeat w)) BEATS_PER_PAGE)
         BEAT_WIDTH) (/ BEAT_WIDTH 2)))
+(check-expect (beatdotx test-world) 96)
 
-; number -> number (posn-y)
+; number -> number(posn-y)
 ; looks at the pitch of the note and determines the row in which the note should go 
 (define (row-location row-num)
   (- (+ TOP_OF_STAFF (* INTERVAL_HEIGHT row-num)) (round (/ INTERVAL_HEIGHT 2))))
@@ -370,22 +363,26 @@
 (check-expect (pitchlookup 72) 166)
 
 ; number number -> number (posn-x)
-; looks at the beat of the note and determines the column in which the note should go
+; looks at the beat of the note and the page to determines the column in which the note should go on that page
 (define (beatlookup beat page)
   (- (+ START_OF_STAFF (* BEAT_WIDTH (- beat (* (- page 1) BEATS_PER_PAGE)))) (round (/ BEAT_WIDTH 2))))
+(check-expect (beatlookup 2 2) -928) 
 
 ; note number -> boolean
-; checks if a note is on that page
+; checks if a note is on a specified page
 (define (noteonpage? note page)
   (= (ceiling (/ (note-beat note) BEATS_PER_PAGE)) page))
+(check-expect (noteonpage? (make-note "piano" 55 2) 1) true)
+(check-expect (noteonpage? (make-note "piano" 55 2) 2) false)
 
-;a similar function
+; number number -> boolean
+; checks if a beat is on a specified page
 (define (beatonpage? beat page)
   (= (ceiling (/ beat BEATS_PER_PAGE)) page))
+(check-expect (beatonpage? 2 1) true)
+(check-expect (beatonpage? 16 2) false)
 
-; Mouse Event Handler
-; World X Y Event -> World
-;;These functions find the row or column that the mouse is in
+; These functions find the row or column that the mouse is in
 ; number -> number (row)
 ; checks which row the mouse coordinates are in
 (define (mouserow y)
@@ -555,8 +552,8 @@
         [(soundbutton-check x y 6) (given-sound w "vgame3")]
         [(soundbutton-check x y 7) (given-sound w "erase")]))
 
-(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)) 65 90)
-              (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 (random 11)))
+(check-expect (buttonrowfunc (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1) 65 90)
+              (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "piano" 1 1))
 
 
 (define (beatselfn w x y)
@@ -588,8 +585,8 @@
          (make-world empty 2 0 "paused" "piano" 1 (world-randval w))]
         [else w]))
 
-(check-expect (mousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)) 100 100 "button-down")
-              (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)) 100 100 "button-down"))
+(check-expect (mousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1) 100 100 "button-down")
+              (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1) 100 100 "button-down"))
 
 ; world x y mouse-event -> world
 ; handles the mouse events on the main screen
@@ -598,28 +595,28 @@
 ; by pressing the play button, the program will play the rsound depending on which blocks are currently red solid
 (define (mainmousefn w x y evt)
   (cond [(and (string=? evt "button-down") (mouseonstaff? x y)) (buttondownhandler w x y)] ;(buttondownhandler w x y)]
-        [(and (string=? evt "button-down") (mouseonreset? x y)) (make-world default_list 2 0 "paused" "piano" 1 (random 11))]
+        [(and (string=? evt "button-down") (mouseonreset? x y)) (make-world default_list 2 0 "paused" "piano" 1 1)]
         [(and (string=? evt "button-down") (mouseonplay? x y)) (play-pressed w)]
         [(and (string=? evt "button-down") (mouseonleftpage? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
                                                                                (world-modestate w) (world-selected w)
-                                                                               (change-page (world-page w) "back") (random 11))]
+                                                                               (change-page (world-page w) "back") (random 10))]
         [(and (string=? evt "button-down") (mouseonrightpage? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
                                                                                 (world-modestate w) (world-selected w)
-                                                                                (change-page (world-page w) "forward") (random 11))]
+                                                                                (change-page (world-page w) "forward") (random 10))]
         [(and (string=? evt "button-down") (mouseonbuttons? x y)) (buttonrowfunc w x y)]
         [(and (string=? evt "button-down") (mouseonoptions? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
-                                                                              "options" (world-selected w) (world-page w) (random 11))]
+                                                                              "options" (world-selected w) (world-page w) (random 10))]
         [(and (string=? evt "button-down") (mouseontempoplus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "+") (world-curbeat w)
-                                                                                (world-modestate w) (world-selected w) (world-page w) (random 11))]
+                                                                                (world-modestate w) (world-selected w) (world-page w) (random 10))]
         [(and (string=? evt "button-down") (mouseontempominus? x y)) (make-world (world-worldlist w) (change-tempo (world-tempo w) "-") (world-curbeat w)
-                                                                                 (world-modestate w) (world-selected w) (world-page w) (random 11))]
+                                                                                 (world-modestate w) (world-selected w) (world-page w) (random 10))]
         [(and (string=? evt "button-down") (mouseonbeatsel? x y)) (beatselfn w x y)]
         [(and (string=? evt "button-down") (string=? (world-modestate w) "start")) 
          (both (play starts) 
-               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "paused" (world-selected w) (world-page w) (random 11)))]
+               (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "paused" (world-selected w) (world-page w) (random 10)))]
         [else w]))
 
-(check-expect (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)) 800 700 "button-down") INITIAL_WORLD)
+(check-expect (mainmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1) 600 75 "button-down") (make-world default_list 2 0 "paused" "piano" 1 1))
 
 ; world posn-x posn-y mouse-event -> world
 ; handles the mouse events on the option menu
@@ -630,13 +627,13 @@
   (cond [(and (string=? evt "button-down") (mouseonsave? x y)) (both (savefile w) w)]
         [(and (string=? evt "button-down") (mouseonload? x y)) (loadfile w)]
         [(and (string=? evt "button-down") (mouseonresume? x y)) (make-world (world-worldlist w) (world-tempo w) (world-curbeat w)
-                                                                             "paused" (world-selected w) (world-page w) ((random 11)))]
-        [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w) ((random 11))))]
+                                                                             "paused" (world-selected w) (world-page w) ((random 10)))]
+        [(and (string=? evt "button-down") (mouseonexit? x y)) (stop-with (make-world(world-worldlist w) (world-tempo w) (world-curbeat w) "shutdown" (world-selected w) (world-page w) ((random 10))))]
         [else w]))
 
-(check-expect (optionsmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)) 500 150 "button-down")
-              (both (savefile (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)))
-                    (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11))))
+(check-expect (optionsmousefn (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1) 500 150 "button-down")
+              (both (savefile (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1))
+                    (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1)))
 
 ; number string -> number
 ; by pressing the increased tempo button, the tempo will increase by 3
@@ -671,10 +668,11 @@
   (cond 
     [(string=? (world-selected w) "erase") (given-worldlist w (delete-note (world-worldlist w) (mousecol x (world-page w)) (findpitch (mouserow y))))]
     [else (make-world (cons (new-note (mousecol x (world-page w)) (mouserow y) (world-selected w) (world-curbeat w) (world-page w)) (world-worldlist w))
-                      (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w) (random 11))]))
+                      (world-tempo w) (world-curbeat w) (world-modestate w) (world-selected w) (world-page w) (random 10))]))
 
-(check-expect (buttondownhandler (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 (random 11)) 50 200)
-              (make-world (list (note "vgame1" 71 1) (note "piano" 71 2) (note "piano" 72 1))  2 0 "paused" "vgame1" 1 (random 11)))
+#;(check-expect (buttondownhandler (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1) 50 200)
+                (make-world (list (note "vgame1" 71 1) (note "piano" 71 2) (note "piano" 72 1))  2 0 "paused" "vgame1" 1 
+                            (world-randval (make-world (list (note "piano" 71 2) (note "piano" 72 1)) 2 0 "paused" "vgame1" 1 1))))
 
 ; number number number list number - > boolean
 ; checks if there is a note at posn-x and posn-y?
@@ -766,32 +764,34 @@
 
 ;;gets the current duration in frames of the song
 (define (song-length w) (rs-frames (make-song (world-worldlist w) (world-tempo w))))
-;(check-expect (song-length test-world) 22050)
+(check-expect (song-length test-world) 168974)
 
 ;;converts world-curbeat to the current frame
-
-(define (current-frame w) (round(* 44100 (* (world-curbeat w) (/ 1 (world-tempo w))))))
+(define (current-frame w) (round (* 44100 (* (world-curbeat w) (/ 1 (world-tempo w))))))
+(check-expect (current-frame test-world) 44100)
 
 
 (define (playbuttonstate pbs)
   (if (string=? pbs "playing") "paused" "playing"))
+(check-expect (playbuttonstate "paused") "playing")
 
 
-;play-button function   world -> world, plays song
-;this function is called in the mainmousefn function, when the play button is clicked.
+; play-button function
+; world -> world (plays song or stop)
+; this function is called in the mainmousefn function, when the play button is clicked.
+; when the modestate is in "paused", 
+(define (play-pressed w)
+  (cond
+    [(string=? "paused" (world-modestate w))(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
+                                                  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "playing" (world-selected w) (world-page w) (world-randval w)))]
+    [(string=? "playing" (world-modestate w))(both (stop)  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
+                                                                       "paused" (world-selected w) (world-page w) (world-randval w)))]))
 
-(define (play-pressed w)(cond
-                          [(string=? "paused" (world-modestate w))(both (play (clip (make-song (world-worldlist w) (world-tempo w)) (current-frame w) (song-length w))) 
-                                                                        (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) "playing" (world-selected w) (world-page w) (world-randval w)))]
-                          [(string=? "playing" (world-modestate w))(both (stop)  (make-world (world-worldlist w) (world-tempo w) (world-curbeat w) 
-                                                                                             "paused" (world-selected w) (world-page w) (world-randval w)))]))
-
+(check-expect (play-pressed test-world) (both (play (clip (make-song (list (note "piano" 55 2)) 2) 44100 168974))
+                                              (make-world (list (note "piano" 55 2)) 2 2 "playing" "piano" 1 1)))
 
 (big-bang INITIAL_WORLD 
           [on-mouse mousefn]
           [on-draw renderfn]
-          [on-tick tick]
-          
-          )
-
+          [on-tick tick])
 (test)
